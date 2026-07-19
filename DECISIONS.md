@@ -62,6 +62,19 @@ The autonomous build makes sensible technical calls here rather than blocking on
 - **Rationale:** robust, standard for src-layout, decouples the test gate from install flakiness.
 - **Status:** done.
 
+### D-011 Simulator is cumulative-time + hazards; retirement inferred for live pricing
+- **Decision:** the Monte Carlo engine advances positions by cumulative race time (fastest car
+  advances) with a dirty-air penalty for track-position stickiness, and draws pits/DNF/safety
+  cars from the hazard models. Two subtleties resolved: (a) the per-lap DNF hazard is calibrated
+  **once** to the remaining stint (recomputing it against a shrinking `laps_remaining` each lap
+  oversums retirements); (b) `pricing_service` orders drivers from the reducer's tracked
+  `position` and treats a driver whose last lap is well behind the leader as retired — the
+  FastF1 adapter doesn't emit explicit retirement events yet, and naive cumulative-time sums
+  rank a car with fewer completed laps as "ahead".
+- **Rationale:** transparent, fast (5k paths in ~0.23s), and correct on real data — verified on
+  Bahrain 2023 (VER favourite mid-race, DNF ≈ input). Simplest approach meeting the deliverable.
+- **Status:** done (Phase 3). Future: have the adapter emit `DriverRetired`; add a particle filter.
+
 ### D-008 Deterministic-first, LLM-optional
 - **Decision:** the default news event extractor is rule-based and deterministic; a hosted LLM extractor is an optional, cached, schema-validated alternative. Explainability contributions are computed numerically; an LLM may only phrase verified numbers.
 - **Rationale:** reproducibility, anti-fabrication, offline CI.

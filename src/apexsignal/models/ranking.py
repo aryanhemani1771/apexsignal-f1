@@ -94,6 +94,13 @@ def simulate(
     )
 
 
+def pairwise_ahead_matrix(
+    positions: NDArray[np.int64], classified: NDArray[np.bool_]
+) -> NDArray[np.float64]:
+    """Public wrapper: P(i ahead of j) from per-path positions and classification."""
+    return _pairwise_ahead(positions, classified)
+
+
 def _pairwise_ahead(
     positions: NDArray[np.int64], classified: NDArray[np.bool_]
 ) -> NDArray[np.float64]:

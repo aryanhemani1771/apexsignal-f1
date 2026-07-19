@@ -10,16 +10,19 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 
 ## Current status
 
-- **Phase:** 2 (Baseline probabilities) — **COMPLETE** (real evaluation on the 2022 season).
+- **Phase:** 3 (Race simulation) — **COMPLETE** (real mid-race pricing verified on Bahrain 2023).
 - **Last agent:** Claude Code (Opus 4.8), 2026-07-19.
-- **Next action:** start **Phase 3** — race simulation: tyre-degradation, pit-hazard, DNF
-  survival, overtake, and safety-car models; a vectorized Monte Carlo race-continuation
-  simulator (~5k paths in a few seconds, seeded); the contract payoff matrix; and a scenario
-  engine. The Plackett-Luce simulator and calibration/metrics from Phase 2 carry forward.
-- **Deferred (non-blocking):** DuckDB/Parquet repository backends; LightGBM GBM baseline
-  (pure-NumPy `grid`/`elo`/`elo_grid` + `uniform` cover the ≥4-baseline bar — see D-009);
-  live current-position baseline (belongs to in-race, Phase 3); evaluation currently spans one
-  season (7 test races → noisy metrics) — widen to multiple seasons; dashboard not run in CI.
+- **Next action:** start **Phase 4** — news intelligence: FIA/fixture adapters, the event
+  ontology + strict `ExtractedF1Event` schema, a deterministic rule-based extractor (+ optional
+  cached LLM), source scoring, dedup/contradiction handling, structured-event → model-parameter
+  mapping (Bayesian shrinkage; priors in `configs/event_impact_priors.yaml`), and "news
+  proposes, telemetry confirms". Wire event impacts into the Phase 3 simulator inputs.
+- **Deferred (non-blocking):** DuckDB/Parquet backends; LightGBM GBM baseline (D-009); widen
+  Phase 2 evaluation to multiple seasons; adapter could emit explicit `DriverRetired` events
+  rather than the pricing service inferring retirement from lapped-out drivers (D-011); latent
+  pace particle filter (Kalman baseline shipped); richer bundled demo race for the pricing
+  dashboard view (currently best via `scripts/price_race.py` on a downloaded race); dashboard
+  not run in CI.
 
 ### Verification status (be honest — do not claim unverified work)
 | Capability | Verified how | Status |
@@ -30,8 +33,10 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 | Deterministic replay of the synthetic fixture | unit tests | ✅ verified |
 | **Real FastF1 download + replay** (2023 Bahrain GP) | `RUN_FASTF1_TESTS=1` integration test + manual `download_history.py`/`replay_race.py` | ✅ verified — 1347 events, 0 quality errors, replayed podium **VER/PER/ALO** matches reality |
 | **Real model evaluation** (2022 season) | `scripts/train_models.py` walk-forward | ✅ verified — 22 races; best winner Brier `elo_grid` 0.0312 (calibrated); report committed |
+| **Real mid-race pricing** (2023 Bahrain, lap 30) | `scripts/price_race.py` + gated integration test | ✅ verified — VER 0.66 win / PER 0.20 / LEC 0.09; DNF ≈ input; VER led & won |
+| Monte Carlo speed | local timing | ✅ 5000 paths × 37 laps in ~0.23s (well under the "few seconds" bar) |
 | Docker image builds | CI `deploy.yml` / `ci.yml` docker-build job | **NOT verified locally** — no Docker on the authoring machine |
-| Dashboard (replay + model perf) renders | needs `--extra dashboard` (Streamlit) | **compiles + lints; not run-verified** (Streamlit not in CI env) |
+| Dashboard (replay + pricing + model perf) renders | needs `--extra dashboard` (Streamlit) | **compiles + lints; not run-verified** (Streamlit not in CI env) |
 
 ---
 
@@ -81,10 +86,11 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 ## Phase 3 — Race simulation
 **Deliverable:** *Prices multiple contracts from simulated race continuations.*
 
-- [ ] Tyre-degradation model · pit hazard · DNF survival · overtake · safety-car hazard
-- [ ] Latent live-pace state-space model (Kalman baseline → particle filter)
-- [ ] Vectorized Monte Carlo simulator (~5k paths in a few seconds, seeded in tests)
-- [ ] Contract payoff matrix + scenario engine
+- [x] Tyre degradation (`models/tyres.py`) · pit hazard · DNF survival · overtake · safety-car hazard — parametric baselines, tested
+- [~] Latent live-pace state-space model — Kalman baseline shipped (`models/latent_pace.py`); particle filter deferred
+- [x] Vectorized Monte Carlo simulator (`simulation/engine.py`) — 5000 paths × 37 laps in ~0.23s, seeded/deterministic in tests
+- [x] Contract payoff matrix (`simulation/payoff_matrix.py`) + scenario engine (`simulation/scenarios.py`)
+- [x] Pricing service (`services/pricing_service.py`) state→prices + `scripts/price_race.py` + dashboard pricing view
 
 ## Phase 4 — News intelligence
 **Deliverable:** *A structured news event visibly moves a model prior and is later confirmed/rejected by telemetry.*

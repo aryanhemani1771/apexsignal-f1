@@ -13,7 +13,10 @@ from __future__ import annotations
 import streamlit as st
 
 import theme  # local module; `streamlit run dashboard/app.py` puts this dir on sys.path
-from apexsignal.services import evaluation_report, race_service
+from apexsignal.domain.events import EventType
+from apexsignal.domain.race_state import replay
+from apexsignal.services import evaluation_report, pricing_service, race_service
+from apexsignal.simulation.engine import SimConfig
 
 
 def _embed_mode() -> bool:
@@ -38,6 +41,47 @@ def _model_performance() -> None:
         if rows:
             st.markdown(f"**{contract.title()} contract** — Brier / log-loss by model")
             st.dataframe(rows, use_container_width=True, hide_index=True)
+
+
+def _contract_pricing() -> None:
+    st.subheader("Contract pricing (Monte Carlo)")
+    events = race_service.load_events()
+    laps = [
+        int(e.payload["lap"])
+        for e in events
+        if e.event_type is EventType.LAP_COMPLETED and "lap" in e.payload
+    ]
+    max_lap = max(laps) if laps else 0
+    if max_lap < 6:
+        st.info(
+            "The bundled demo race is too short to price a meaningful continuation. "
+            "Download a race and use the CLI:\n\n"
+            "`uv run --extra data python scripts/price_race.py --season 2023 --round 1 --at-lap 30`"
+        )
+        return
+
+    at_lap = st.slider("Price after lap", 3, max_lap - 1, max_lap // 2)
+    cutoff = max(
+        e.event_time
+        for e in events
+        if e.event_type is EventType.LAP_COMPLETED and int(e.payload.get("lap", 0)) <= at_lap
+    )
+    subset = [e for e in events if e.event_time <= cutoff]
+    prices = pricing_service.price_from_state(
+        replay(subset), subset, total_laps=max_lap, config=SimConfig(n_paths=2000, seed=42)
+    )
+    rows = [
+        {
+            "driver": p.driver_id,
+            "win": round(p.win, 3),
+            "podium": round(p.podium, 3),
+            "points": round(p.points, 3),
+            "dnf": round(p.dnf, 3),
+        }
+        for p in sorted(prices.drivers.values(), key=lambda x: -x.win)
+    ]
+    st.metric("Safety car (remaining laps)", f"{prices.safety_car:.1%}")
+    st.dataframe(rows, use_container_width=True, hide_index=True)
 
 
 def _race_replay() -> None:
@@ -80,7 +124,11 @@ def main() -> None:
         st.title(f"🏁 {theme.BRAND}")
         st.caption(theme.TAGLINE)
 
-    views = {"Race replay": _race_replay, "Model performance": _model_performance}
+    views = {
+        "Race replay": _race_replay,
+        "Contract pricing": _contract_pricing,
+        "Model performance": _model_performance,
+    }
     choice = "Race replay" if embed else st.sidebar.radio("View", list(views))
     views[choice]()
 

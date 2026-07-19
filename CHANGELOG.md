@@ -5,6 +5,29 @@ Also serves as the agent development log (one entry per phase / work session).
 
 ## [Unreleased]
 
+### Phase 3 — Race simulation & in-race pricing — 2026-07-19
+**Objective:** price multiple contracts from simulated race continuations.
+
+Added:
+- Component models: `models/tyres.py` (degradation + robust fit), `models/dnf_hazard.py`
+  (survival), `models/safety_car_hazard.py`, `models/pit_hazard.py`, `models/overtake.py`,
+  and `models/latent_pace.py` (robust clean-air pace + a 1-D Kalman filter baseline).
+- `simulation/engine.py` — vectorized Monte Carlo race-continuation simulator (lap-by-lap:
+  pace + tyre deg + fuel + dirty air + noise; pit/DNF/safety-car draws; gap compression under
+  SC). 5000 paths × ~37 laps in ~0.23s, seeded and deterministic.
+- `simulation/payoff_matrix.py` — win/podium/points/DNF/fastest-lap/positions-gained/
+  pit-before-lap/pairwise-H2H + race-level safety-car probabilities.
+- `simulation/scenarios.py` — perturb pace/penalty/DNF/safety-car and compare contract deltas.
+- `services/pricing_service.py` — race state + lap history → contract prices; `scripts/price_race.py`;
+  a dashboard "Contract pricing" view.
+- Tests: hazards, latent pace, simulator (determinism/validity/monotonicity), payoff,
+  scenarios, pricing service, and a gated real-pricing integration test.
+
+Verified:
+- `make ci` green — 89 tests pass + 2 gated skips; ruff/mypy(strict)/bandit clean.
+- **Real mid-race pricing on Bahrain 2023 (lap 30)**: VER 0.66 win / PER 0.20 / LEC 0.09,
+  per-driver DNF ≈ the input rate — VER led and won. Matches reality; nothing hard-coded.
+
 ### Phase 2 — Baseline probabilities — 2026-07-19
 **Objective:** produce evaluated, calibrated historical contract probabilities.
 
