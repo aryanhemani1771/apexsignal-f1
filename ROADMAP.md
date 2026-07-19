@@ -10,18 +10,22 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 
 ## Current status
 
-- **Phase:** 0 (Repository & research) — **in progress**
-- **Last agent:** Claude Code (Opus 4.8)
-- **Boots + tests pass:** target for Phase 0 completion — see "Verification status" below.
-- **Next action:** finish Phase 0 acceptance (`make ci` green), then start Phase 1 (FastF1 adapter + event store + race-state reducer + deterministic replay).
+- **Phase:** 0 (Repository & research) — **COMPLETE** (exit gate verified).
+- **Last agent:** Claude Code (Opus 4.8), 2026-07-19.
+- **Next action:** start **Phase 1** — FastF1 adapter → normalize one full race → append-only
+  event store → deterministic race-state reducer → deterministic replay → data-quality
+  report → basic replay dashboard page. Begin with the FastF1 adapter + a fixture-backed
+  normalization test (the synthetic `data/fixtures/demo_race` bundle already validates
+  against `DomainEvent` and can seed the reducer tests before real FastF1 data lands).
 
 ### Verification status (be honest — do not claim unverified work)
 | Capability | Verified how | Status |
 |---|---|---|
-| `uv sync --dev` installs | local | pending first run this session |
-| `ruff` / `mypy` / `pytest` green | local `make ci` | pending |
+| `uv sync --dev` installs | local | ✅ verified (Python 3.12.13, uv.lock committed) |
+| `ruff` / `mypy(strict)` / `pytest` / `bandit` green | local `make ci` | ✅ verified — 21 tests pass, 0 lint/type/security issues |
+| `scripts/bootstrap.py` runs | local | ✅ verified |
 | Docker image builds | CI `deploy.yml` / `ci.yml` docker-build job | **NOT verified locally** — no Docker on the authoring machine |
-| One full historical race bundled | Phase 1 | not started |
+| One full historical race bundled | Phase 1 | not started (synthetic fixture only) |
 
 ---
 
@@ -40,8 +44,8 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 - [x] Structured logging (`logging.py`) with secret redaction
 - [x] Foundational domain models with real tests: `provenance.py`, `events.py`
 - [x] Minimal deterministic fixture bundle under `data/fixtures/`
-- [ ] `make ci` green locally (lint + type + test + security)  ← **Phase 0 exit gate**
-- [ ] Inspect referenced repos' licenses and record in `THIRD_PARTY_NOTICES.md` (initial pass done; deepen when code is actually borrowed)
+- [x] `make ci` green locally (lint + type + test + security)  ← **Phase 0 exit gate ✅**
+- [~] Inspect referenced repos' licenses and record in `REFERENCES.md` / `THIRD_PARTY_NOTICES.md` (initial pass done; deepen when code is actually borrowed in later phases)
 
 ## Phase 1 — Historical F1 data & replay
 **Deliverable:** *A complete race can be replayed locally without external credentials.*
