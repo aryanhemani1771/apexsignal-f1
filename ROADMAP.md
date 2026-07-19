@@ -10,17 +10,16 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 
 ## Current status
 
-- **Phase:** 1 (Historical F1 data & replay) — **COMPLETE** (deliverable verified on a real race).
+- **Phase:** 2 (Baseline probabilities) — **COMPLETE** (real evaluation on the 2022 season).
 - **Last agent:** Claude Code (Opus 4.8), 2026-07-19.
-- **Next action:** start **Phase 2** — baselines (grid, position, Elo, GBM pre-race),
-  time-varying driver/constructor ratings, pairwise→ranking model, winner/podium/points/H2H/DNF
-  probabilities, time-based splits, calibration, and a model-performance dashboard page. The
-  event store + deterministic reducer from Phase 1 are the point-in-time substrate to build on.
-- **Deferred within Phase 1 (non-blocking, pick up opportunistically):** DuckDB/Parquet
-  repository backends (`storage/duckdb_repository.py`, `storage/parquet_repository.py` still
-  empty — JSONL event store covers Phase 1); a couple of replay display ties for lapped/retired
-  cars; the dashboard replay page is written + compiles but is not run in CI (no Streamlit in
-  the CI/dev env — same policy as Docker).
+- **Next action:** start **Phase 3** — race simulation: tyre-degradation, pit-hazard, DNF
+  survival, overtake, and safety-car models; a vectorized Monte Carlo race-continuation
+  simulator (~5k paths in a few seconds, seeded); the contract payoff matrix; and a scenario
+  engine. The Plackett-Luce simulator and calibration/metrics from Phase 2 carry forward.
+- **Deferred (non-blocking):** DuckDB/Parquet repository backends; LightGBM GBM baseline
+  (pure-NumPy `grid`/`elo`/`elo_grid` + `uniform` cover the ≥4-baseline bar — see D-009);
+  live current-position baseline (belongs to in-race, Phase 3); evaluation currently spans one
+  season (7 test races → noisy metrics) — widen to multiple seasons; dashboard not run in CI.
 
 ### Verification status (be honest — do not claim unverified work)
 | Capability | Verified how | Status |
@@ -30,8 +29,9 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 | `scripts/bootstrap.py` runs | local | ✅ verified |
 | Deterministic replay of the synthetic fixture | unit tests | ✅ verified |
 | **Real FastF1 download + replay** (2023 Bahrain GP) | `RUN_FASTF1_TESTS=1` integration test + manual `download_history.py`/`replay_race.py` | ✅ verified — 1347 events, 0 quality errors, replayed podium **VER/PER/ALO** matches reality |
+| **Real model evaluation** (2022 season) | `scripts/train_models.py` walk-forward | ✅ verified — 22 races; best winner Brier `elo_grid` 0.0312 (calibrated); report committed |
 | Docker image builds | CI `deploy.yml` / `ci.yml` docker-build job | **NOT verified locally** — no Docker on the authoring machine |
-| Dashboard replay page renders | needs `--extra dashboard` (Streamlit) | **compiles + lints; not run-verified** (Streamlit not in CI env) |
+| Dashboard (replay + model perf) renders | needs `--extra dashboard` (Streamlit) | **compiles + lints; not run-verified** (Streamlit not in CI env) |
 
 ---
 
@@ -68,13 +68,15 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 ## Phase 2 — Baseline probabilities
 **Deliverable:** *Evaluated, calibrated historical probabilities.*
 
-- [ ] Baselines: grid heuristic, current-position heuristic, driver/constructor Elo, GBM pre-race
-- [ ] Time-varying driver/constructor ratings (decay + partial pooling)
-- [ ] Pairwise "A ahead of B" model → coherent ranking → contract probs
-- [ ] Winner / podium / points / H2H / DNF probabilities
-- [ ] Time-based train/val/test splits (never random row splits within a race)
-- [ ] Calibration (isotonic / Platt / beta) chosen on validation only
-- [ ] Model-performance dashboard page (real metrics only; else "Not yet evaluated")
+- [x] Baselines: grid + uniform + driver/constructor Elo (+ Elo×grid). GBM deferred (D-009); live current-position baseline is an in-race (Phase 3) predictor
+- [x] Time-varying driver/constructor ratings (`models/driver_ratings.py`) — decay + partial pooling; pace ratings exclude DNFs
+- [x] Pairwise "A ahead of B" + Plackett-Luce ranking → contract probs (`models/ranking.py`)
+- [x] Winner / podium / points / H2H (pairwise) / DNF probabilities (`models/prerace.py`)
+- [x] Time-based walk-forward splits, calibrate on validation only (`backtesting/evaluation.py`) + leakage test
+- [x] Calibration (isotonic / Platt / identity) chosen by validation log loss (`models/calibration.py`)
+- [x] Metrics: Brier, log loss, ECE, calibration slope/intercept, reliability bins (`backtesting/metrics.py`)
+- [x] Model-performance dashboard view (real metrics from the report, else "Not yet evaluated")
+- [x] Real evaluation run (`scripts/train_models.py`) → `artifacts/reports/evaluation_latest.json`
 
 ## Phase 3 — Race simulation
 **Deliverable:** *Prices multiple contracts from simulated race continuations.*

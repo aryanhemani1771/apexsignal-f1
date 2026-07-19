@@ -19,6 +19,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from apexsignal.domain.contracts import DriverEntry, RaceResult
 from apexsignal.domain.events import DomainEvent, EventType, sort_key
 from apexsignal.logging import get_logger
 
@@ -112,6 +113,37 @@ class FastF1Adapter:
             n_events=len(events),
         )
         return events
+
+    def load_session_result(self, season: int, event: int | str, session: str = "R") -> RaceResult:
+        """Load a session's classification as a :class:`RaceResult` for evaluation."""
+        ff1_session = self._fastf1.get_session(season, event, session)
+        ff1_session.load(laps=False, telemetry=False, weather=False, messages=False)
+        results = ff1_session.results
+
+        meeting_id = f"{season}-{getattr(ff1_session.event, 'RoundNumber', event)}"
+        session_id = f"{meeting_id}-{session}"
+        entries: list[DriverEntry] = []
+        for _, row in results.iterrows():
+            driver = _str_or_none(row.get("Abbreviation")) or _str_or_none(row.get("DriverNumber"))
+            if driver is None:
+                continue
+            status = _str_or_none(row.get("Status")) or ""
+            classified_pos = _int_or_none(row.get("ClassifiedPosition"))
+            finished = "Finished" in status or status.startswith("+")
+            classified = classified_pos is not None
+            entries.append(
+                DriverEntry(
+                    driver_id=driver,
+                    constructor_id=_slug(row.get("TeamName")),
+                    grid=_int_or_none(row.get("GridPosition")),
+                    finish_position=_int_or_none(row.get("Position")),
+                    dnf=not finished,
+                    classified=classified,
+                )
+            )
+
+        date = _to_utc(getattr(ff1_session, "date", None)) or datetime.now(UTC)
+        return RaceResult(meeting_id=meeting_id, session_id=session_id, date=date, entries=entries)
 
     @staticmethod
     def _session_t0(s: Any) -> datetime | None:

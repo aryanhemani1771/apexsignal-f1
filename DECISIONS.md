@@ -44,6 +44,24 @@ The autonomous build makes sensible technical calls here rather than blocking on
 - **Rationale:** no-data-leakage requirement; defensible point-in-time reconstruction.
 - **Status:** base models + leakage test implemented Phase 0.
 
+### D-009 Pure-NumPy model stack for Phase 2; GBM deferred
+- **Decision:** implement the Phase 2 baselines and calibration in pure NumPy (Elo ratings,
+  Plackett-Luce simulation, isotonic/Platt calibration, Brier/log-loss/ECE) so the whole model
+  stack is exercised in CI without the heavy `models` extra. The ≥4-baseline bar is met by
+  `uniform`, `grid`, `elo`, `elo_grid`. A LightGBM GBM pre-race model is deferred to a guarded
+  module (like the FastF1 adapter) when tabular training data warrants it.
+- **Rationale:** fast, deterministic, offline-testable; avoids compiling LightGBM for a
+  baseline that grid+Elo already cover. Simplest thing that satisfies the acceptance criteria.
+- **Status:** done (Phase 2). GBM: not started.
+
+### D-010 Tests import from `src/` via pytest `pythonpath`
+- **Context:** the hatchling editable install for the `src/` layout proved flaky across repeated
+  `uv sync` runs with different extras (the package intermittently failed to import).
+- **Decision:** set `[tool.pytest.ini_options] pythonpath = ["src"]` so tests import the package
+  directly from source, independent of the editable install. CI does a single clean sync anyway.
+- **Rationale:** robust, standard for src-layout, decouples the test gate from install flakiness.
+- **Status:** done.
+
 ### D-008 Deterministic-first, LLM-optional
 - **Decision:** the default news event extractor is rule-based and deterministic; a hosted LLM extractor is an optional, cached, schema-validated alternative. Explainability contributions are computed numerically; an LLM may only phrase verified numbers.
 - **Rationale:** reproducibility, anti-fabrication, offline CI.

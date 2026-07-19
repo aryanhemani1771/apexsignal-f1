@@ -5,6 +5,37 @@ Also serves as the agent development log (one entry per phase / work session).
 
 ## [Unreleased]
 
+### Phase 2 — Baseline probabilities — 2026-07-19
+**Objective:** produce evaluated, calibrated historical contract probabilities.
+
+Added:
+- `models/_numeric.py` — NumPy helpers (sigmoid/logit, IRLS logistic fit, PAVA isotonic).
+- `models/driver_ratings.py` — time-varying driver/constructor Elo (decay + partial pooling)
+  and a Beta-smoothed constructor DNF reliability estimate; pace ratings exclude retirements.
+- `models/ranking.py` — Gumbel-max Plackett-Luce simulator → win/podium/points/DNF + pairwise
+  head-to-head probabilities (seeded, deterministic).
+- `models/prerace.py` + `backtesting/baselines.py` — `elo`, `elo_grid`, `grid`, `uniform`
+  models over a shared prediction path.
+- `models/calibration.py` — isotonic + Platt + identity, chosen by validation log loss.
+- `backtesting/metrics.py` — Brier, log loss, ECE, calibration slope/intercept, reliability bins.
+- `backtesting/evaluation.py` — walk-forward, time-based evaluation with validation-only
+  calibration; `domain/contracts.py` (RaceResult / RacePrediction / outcome extractors).
+- `ingestion/fastf1_adapter.py` — `load_session_result` → `RaceResult`.
+- `services/evaluation_report.py` + dashboard "Model performance" view.
+- Real `scripts/train_models.py`; report at `artifacts/reports/evaluation_latest.json`.
+- Tests: metrics, calibration, ranking, ratings, prerace/baselines, evaluation, evaluation
+  report, and a walk-forward leakage guard.
+
+Verified:
+- `make ci` green — 70 tests pass + 1 gated skip; ruff/mypy(strict)/bandit clean.
+- **Real walk-forward evaluation on the 2022 season (22 races)**: best winner Brier
+  `elo_grid` = 0.0312 (calibrated, 7 test races). Metrics are measured, not hard-coded; small
+  test set flagged as noisy in `MODEL_CARD.md`.
+
+Changed:
+- Tests import from `src/` via pytest `pythonpath` (D-010), decoupling the gate from a flaky
+  editable install.
+
 ### Phase 1 — Historical F1 data & replay — 2026-07-19
 **Objective:** a complete race can be replayed locally without external credentials.
 

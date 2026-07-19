@@ -101,6 +101,9 @@ ignore_missing_imports = true
 minversion = "8.0"
 addopts = "-ra --strict-markers"
 testpaths = ["tests"]
+# Import the package straight from src/ so tests never depend on the editable install
+# being present/valid (robust for the src-layout across uv re-syncs and in CI).
+pythonpath = ["src"]
 markers = [
     "integration: tests that exercise adapters against mocked external services",
     "leakage: point-in-time / no-future-data invariants",

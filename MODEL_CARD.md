@@ -32,13 +32,24 @@ permitted news metadata/excerpts. Point-in-time discipline via `first_seen_at`.
   plus breakdowns by laps-remaining / circuit type / weather / contract type.
 - Baseline comparison + ablations (no-news / sentiment / structured-event / telemetry-only / full).
 
-| Metric | Value |
-|---|---|
-| Races processed | `Not yet evaluated` |
-| Brier (winner) | `Not yet evaluated` |
-| Log loss (podium) | `Not yet evaluated` |
-| ECE (DNF) | `Not yet evaluated` |
-| Calibration slope | `Not yet evaluated` |
+**First measured evaluation** — walk-forward over the **2022 season (22 races)**, 5000
+simulation paths, calibrated on validation only, scored on the final **7 test races**.
+Best model by winner Brier is `elo_grid` (Elo form + starting grid). Full report:
+`artifacts/reports/evaluation_latest.json`. Regenerate with
+`uv run --extra data python scripts/train_models.py --season 2022`.
+
+| Metric (calibrated, test set) | `grid` | `elo` | `elo_grid` |
+|---|---|---|---|
+| Winner — Brier | 0.0385 | 0.0472 | **0.0312** |
+| Winner — log loss | 0.143 | 0.141 | 0.293 |
+| Podium — Brier | 0.0797 | 0.1004 | **0.0788** |
+| Podium — log loss | 0.261 | 0.985 | **0.423** |
+| DNF — ECE | 0.052 | 0.125 | 0.125 |
+
+> **Caveat (honest):** the test set is only 7 races, so these numbers are noisy — treat them
+> as a working baseline, not a settled result. Longer horizons (more seasons) come next; the
+> harness records whatever is actually measured. `elo`'s edge over `grid` is expected to grow
+> with more training races.
 
 ## Uncertainty
 Every probability is returned with a lower/upper bound plus `model_version`,

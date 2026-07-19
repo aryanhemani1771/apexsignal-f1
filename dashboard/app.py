@@ -1,7 +1,7 @@
-"""ApexSignal F1 dashboard — Phase 1: interactive race replay.
+"""ApexSignal F1 dashboard — Phases 1-2: race replay + model performance.
 
 Runs in fixture mode with zero credentials. Later phases add the remaining pages
-(pricing, opportunities, allocation, news, model performance, architecture).
+(pricing, opportunities, allocation, news, architecture).
 
     uv run --extra dashboard streamlit run dashboard/app.py
 
@@ -13,7 +13,7 @@ from __future__ import annotations
 import streamlit as st
 
 import theme  # local module; `streamlit run dashboard/app.py` puts this dir on sys.path
-from apexsignal.services import race_service
+from apexsignal.services import evaluation_report, race_service
 
 
 def _embed_mode() -> bool:
@@ -23,15 +23,24 @@ def _embed_mode() -> bool:
         return False
 
 
-def main() -> None:
-    st.set_page_config(page_title=theme.BRAND, page_icon="🏁", layout="wide")
-    st.markdown(theme.CSS, unsafe_allow_html=True)
+def _model_performance() -> None:
+    st.subheader("Model performance")
+    report = evaluation_report.load_latest_report()
+    if report is None:
+        st.info("Not yet evaluated. Run `scripts/train_models.py` to generate real metrics.")
+        return
+    st.caption(
+        f"Walk-forward on {report.get('n_races', '?')} races "
+        f"(seasons {report.get('seasons')}), {report.get('simulation_paths')} sim paths."
+    )
+    for contract in ("win", "podium", "points", "dnf"):
+        rows = evaluation_report.contract_summary(report, contract)
+        if rows:
+            st.markdown(f"**{contract.title()} contract** — Brier / log-loss by model")
+            st.dataframe(rows, use_container_width=True, hide_index=True)
 
-    embed = _embed_mode()
-    if not embed:
-        st.title(f"🏁 {theme.BRAND}")
-        st.caption(theme.TAGLINE)
 
+def _race_replay() -> None:
     events = race_service.load_events()
     history = race_service.replay_history(events)
     quality = race_service.quality_report(events)
@@ -57,10 +66,23 @@ def main() -> None:
         st.markdown("**Recent events**")
         st.write(" · ".join(state.recent_events[-6:]))
 
+    with st.expander("Data-quality report"):
+        st.write(quality.summary())
+        st.dataframe([i.model_dump() for i in quality.issues], use_container_width=True)
+
+
+def main() -> None:
+    st.set_page_config(page_title=theme.BRAND, page_icon="🏁", layout="wide")
+    st.markdown(theme.CSS, unsafe_allow_html=True)
+
+    embed = _embed_mode()
     if not embed:
-        with st.expander("Data-quality report"):
-            st.write(quality.summary())
-            st.dataframe([i.model_dump() for i in quality.issues], use_container_width=True)
+        st.title(f"🏁 {theme.BRAND}")
+        st.caption(theme.TAGLINE)
+
+    views = {"Race replay": _race_replay, "Model performance": _model_performance}
+    choice = "Race replay" if embed else st.sidebar.radio("View", list(views))
+    views[choice]()
 
     st.markdown(f"<div class='as-muted'>{theme.DISCLAIMER}</div>", unsafe_allow_html=True)
 
