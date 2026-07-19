@@ -1,0 +1,60 @@
+{
+  "meta": {
+    "note": "Synthetic, deterministic fixture. NOT real F1 data. Names are invented placeholders.",
+    "meeting_id": "demo-2099-01",
+    "session_id": "demo-2099-01-R",
+    "schema_version": 1
+  },
+  "events": [
+    {
+      "event_type": "LapCompleted",
+      "source": "fixture",
+      "source_event_id": "demo-l1-ax",
+      "event_time": "2099-01-01T14:00:00+00:00",
+      "first_seen_at": "2099-01-01T14:00:00+00:00",
+      "ingested_at": "2099-01-01T14:00:01+00:00",
+      "meeting_id": "demo-2099-01",
+      "session_id": "demo-2099-01-R",
+      "driver_id": "AX7",
+      "constructor_id": "apex_racing",
+      "payload": {"lap": 1, "position": 1, "lap_time": 92.104, "tyre": "medium", "tyre_age": 1}
+    },
+    {
+      "event_type": "LapCompleted",
+      "source": "fixture",
+      "source_event_id": "demo-l1-bo",
+      "event_time": "2099-01-01T14:00:01+00:00",
+      "first_seen_at": "2099-01-01T14:00:01+00:00",
+      "ingested_at": "2099-01-01T14:00:02+00:00",
+      "meeting_id": "demo-2099-01",
+      "session_id": "demo-2099-01-R",
+      "driver_id": "BO4",
+      "constructor_id": "borealis",
+      "payload": {"lap": 1, "position": 2, "lap_time": 92.540, "tyre": "medium", "tyre_age": 1}
+    },
+    {
+      "event_type": "SafetyCarDeployed",
+      "source": "fixture",
+      "source_event_id": "demo-sc-1",
+      "event_time": "2099-01-01T14:12:30+00:00",
+      "first_seen_at": "2099-01-01T14:12:31+00:00",
+      "ingested_at": "2099-01-01T14:12:32+00:00",
+      "meeting_id": "demo-2099-01",
+      "session_id": "demo-2099-01-R",
+      "payload": {"lap": 8, "reason": "debris"}
+    },
+    {
+      "event_type": "PitStopCompleted",
+      "source": "fixture",
+      "source_event_id": "demo-pit-bo-1",
+      "event_time": "2099-01-01T14:13:10+00:00",
+      "first_seen_at": "2099-01-01T14:13:11+00:00",
+      "ingested_at": "2099-01-01T14:13:12+00:00",
+      "meeting_id": "demo-2099-01",
+      "session_id": "demo-2099-01-R",
+      "driver_id": "BO4",
+      "constructor_id": "borealis",
+      "payload": {"lap": 8, "stationary_seconds": 2.4, "new_tyre": "hard"}
+    }
+  ]
+}

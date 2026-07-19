@@ -1,0 +1,29 @@
+# Base configuration shared by all environments. Environment files override selectively.
+project:
+  name: ApexSignal F1
+  disclaimer: >-
+    ApexSignal F1 is an independent research project and is not affiliated with Formula 1,
+    the FIA, any constructor, Kalshi, Polymarket, or Akuna Capital.
+
+runtime:
+  app_mode: fixture          # fixture | replay | live | paper
+  execution_mode: paper      # paper | kalshi_demo | synthetic
+  enable_live_trading: false # never true on the default branch
+  random_seed: 42
+  simulation_paths: 5000
+
+storage:
+  database_url: sqlite:///data/apexsignal.db
+  parquet_dir: data/raw
+  fastf1_cache_dir: .cache/fastf1
+
+pricing:
+  min_conservative_edge: 0.03      # 3 percentage points
+  min_mapping_confidence: 0.95
+  # Fee/slippage defaults are exchange-specific; refined in Phase 5/6.
+  default_taker_fee: 0.01
+  default_slippage: 0.005
+
+logging:
+  level: INFO
+  redact_secrets: true

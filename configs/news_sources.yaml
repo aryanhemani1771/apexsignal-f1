@@ -1,0 +1,37 @@
+# News/source configuration (Phase 4). Source reliability is CONFIGURABLE, not objective
+# truth — every score records a reason and this file's version. Only crawl sources whose
+# terms permit it; prefer official RSS/document endpoints.
+version: 1
+
+source_classes:
+  fia_document:        { reliability: 0.98, note: "Official FIA decision/technical document" }
+  official_team:       { reliability: 0.95, note: "Official team or driver statement" }
+  official_championship:{ reliability: 0.93, note: "Official championship source" }
+  named_journalist:    { reliability: 0.80, note: "Named reputable motorsport journalist" }
+  specialist_pub:      { reliability: 0.70, note: "Established specialist publication" }
+  general_pub:         { reliability: 0.55, note: "General news publication" }
+  aggregator:          { reliability: 0.35, note: "Aggregator / re-report" }
+  anonymous_social:    { reliability: 0.15, note: "Anonymous social-media claim" }
+
+sources:
+  - id: fia_decisions
+    class: fia_document
+    kind: document
+    url: https://www.fia.com/documents
+    enabled: true
+  - id: fia_rss
+    class: official_championship
+    kind: rss
+    url: https://www.fia.com/rss
+    enabled: true
+  # NewsAPI / GDELT / Fundus-based sources are enabled only when configured and permitted.
+  - id: newsapi
+    class: general_pub
+    kind: api
+    requires_key: NEWSAPI_KEY
+    enabled: false
+  - id: gdelt
+    class: aggregator
+    kind: api
+    requires_key: GDELT_API_KEY
+    enabled: false

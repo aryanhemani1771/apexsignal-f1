@@ -1,0 +1,25 @@
+# Risk limits for the simulated allocation engine (Phase 6). Conservative by default.
+# All fractions are of the user-entered research bankroll.
+kelly_fraction:
+  conservative: 0.10
+  moderate: 0.20
+  aggressive: 0.25
+  # Full Kelly is intentionally NOT offered.
+
+exposure_caps:
+  max_per_market: 0.02
+  max_total_deployment: 0.10
+  max_driver_exposure: 0.04
+  max_constructor_exposure: 0.06
+  max_correlated_cluster_exposure: 0.06
+
+thresholds:
+  min_conservative_edge: 0.03      # 3 percentage points, after fees & slippage
+  min_mapping_confidence: 0.95
+  min_liquidity: 100               # exchange-unit notional; refined in Phase 5
+  max_estimated_slippage: 0.02
+
+optimizer:
+  risk_aversion: 5.0               # weight on portfolio variance
+  integer_contracts: true
+  allow_short: false               # only via explicitly modeling the opposite outcome

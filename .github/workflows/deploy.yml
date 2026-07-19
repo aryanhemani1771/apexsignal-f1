@@ -1,0 +1,18 @@
+name: Deploy
+
+# Deployment is gated: it only runs on an explicit tag or manual dispatch, never
+# automatically. Real deployment requires user authorization (see DECISIONS.md).
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build portfolio image
+        run: docker build -t apexsignal-f1:${{ github.sha }} .
+      # Publishing / hosting steps are intentionally left unconfigured until a
+      # deployment target and credentials are authorized. See deploy/PORTFOLIO_EMBED.md.

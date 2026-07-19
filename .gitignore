@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.hypothesis/
+
+# Environments
+.venv/
+.env
+!.env.example
+
+# uv
+# uv.lock IS committed (reproducible builds); nothing to ignore here.
+
+# Caches / data artifacts (never commit raw external data or secrets)
+.cache/
+data/raw/
+*.duckdb
+*.sqlite
+*.sqlite3
+artifacts/models/*.pkl
+artifacts/models/*.joblib
+artifacts/models/*.txt
+
+# Keep the fixture + sample bundles and directory placeholders
+!data/fixtures/**
+!data/sample/**
+!artifacts/**/.gitkeep
+
+# Secrets / keys
+*.pem
+kalshi_private_key*
+secrets/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+*.swp

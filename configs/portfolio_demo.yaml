@@ -1,0 +1,14 @@
+# Public portfolio demo: deterministic, credential-free, safe.
+runtime:
+  app_mode: fixture
+  execution_mode: paper
+  enable_live_trading: false
+  simulation_paths: 2000
+
+demo:
+  bundled_race: fixtures     # the committed deterministic race bundle
+  allow_public_market_data: true   # read-only; degrade gracefully if unavailable
+  embed_default: true              # hide nav chrome when ?embed=true
+
+logging:
+  level: INFO

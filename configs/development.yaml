@@ -1,0 +1,7 @@
+# Local development overrides.
+runtime:
+  app_mode: fixture
+  simulation_paths: 1000   # faster local iteration
+
+logging:
+  level: DEBUG

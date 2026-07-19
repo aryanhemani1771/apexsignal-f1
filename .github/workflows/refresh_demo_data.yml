@@ -1,0 +1,23 @@
+name: Refresh demo data
+
+# Regenerates the deterministic fixture/demo bundle used by the public portfolio
+# demo. Kept manual/scheduled so it never runs against live APIs on every push.
+on:
+  schedule:
+    - cron: "0 5 * * 2" # weekly Tuesday 05:00 UTC
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv python install 3.12
+      - run: uv sync --dev --extra data --extra models
+      - name: Regenerate demo assets (deterministic)
+        run: uv run python scripts/generate_demo_assets.py
+      # NOTE: enable the commit step once generate_demo_assets.py lands (Phase 1).
+      # - uses: stefanzweifel/git-auto-commit-action@v5
+      #   with:
+      #     commit_message: "chore: refresh deterministic demo assets"

@@ -1,0 +1,38 @@
+# EXPERT PRIORS for structured news-event impacts (Phase 4). These are PRIORS, not facts:
+# they seed a Bayesian shrinkage step and are meant to be overridden by historical event
+# studies where sample size allows. Unconfirmed events get lower impact, wider uncertainty,
+# and faster time-decay. Effects are expressed as deltas applied to model parameters.
+version: 1
+note: >-
+  Priors are deliberately conservative and wide. Prefer estimating impacts from historical
+  event studies (see notebooks/04_news_event_study.ipynb) over these hand-set values.
+
+defaults:
+  unconfirmed_impact_scale: 0.4     # multiply the effect for rumor/unconfirmed events
+  unconfirmed_uncertainty_scale: 1.8
+  time_decay_half_life_hours:
+    confirmed: 168
+    unconfirmed: 24
+
+priors:
+  GRID_PENALTY:
+    grid_position_delta: { mean: 5, sd: 3 }         # positions lost (context-dependent)
+  POWER_UNIT_CHANGE:
+    grid_position_delta: { mean: 10, sd: 4 }
+    dnf_log_odds_delta:  { mean: 0.2, sd: 0.3 }
+  RELIABILITY_WARNING:
+    dnf_log_odds_delta:  { mean: 0.4, sd: 0.4 }
+  PRACTICE_CRASH:
+    pace_uncertainty_delta: { mean: 0.15, sd: 0.1 } # sec/lap uncertainty added
+    dnf_log_odds_delta:     { mean: 0.1, sd: 0.2 }
+  DRIVER_ILLNESS:
+    pace_delta_seconds_per_lap: { mean: 0.1, sd: 0.15 }
+    pace_uncertainty_delta:     { mean: 0.2, sd: 0.15 }
+  AERODYNAMIC_UPGRADE:
+    pace_delta_seconds_per_lap: { mean: -0.1, sd: 0.15 } # improvement, but uncertain
+    pace_uncertainty_delta:     { mean: 0.15, sd: 0.1 }
+  RAIN_EXPECTED:
+    wet_performance_delta: { mean: 0.0, sd: 0.3 }   # driver/team dependent
+  STEWARD_INVESTIGATION:
+    # distribution over outcomes handled in code; no direct point delta here.
+    pace_uncertainty_delta: { mean: 0.0, sd: 0.05 }
