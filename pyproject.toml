@@ -94,7 +94,7 @@ disallow_untyped_defs = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["fastf1.*", "lightgbm.*", "lifelines.*", "statsmodels.*", "duckdb.*", "plotly.*", "streamlit.*"]
+module = ["fastf1.*", "pandas", "pandas.*", "lightgbm.*", "lifelines.*", "statsmodels.*", "duckdb.*", "plotly.*", "streamlit.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

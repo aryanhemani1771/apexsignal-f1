@@ -10,22 +10,28 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 
 ## Current status
 
-- **Phase:** 0 (Repository & research) — **COMPLETE** (exit gate verified).
+- **Phase:** 1 (Historical F1 data & replay) — **COMPLETE** (deliverable verified on a real race).
 - **Last agent:** Claude Code (Opus 4.8), 2026-07-19.
-- **Next action:** start **Phase 1** — FastF1 adapter → normalize one full race → append-only
-  event store → deterministic race-state reducer → deterministic replay → data-quality
-  report → basic replay dashboard page. Begin with the FastF1 adapter + a fixture-backed
-  normalization test (the synthetic `data/fixtures/demo_race` bundle already validates
-  against `DomainEvent` and can seed the reducer tests before real FastF1 data lands).
+- **Next action:** start **Phase 2** — baselines (grid, position, Elo, GBM pre-race),
+  time-varying driver/constructor ratings, pairwise→ranking model, winner/podium/points/H2H/DNF
+  probabilities, time-based splits, calibration, and a model-performance dashboard page. The
+  event store + deterministic reducer from Phase 1 are the point-in-time substrate to build on.
+- **Deferred within Phase 1 (non-blocking, pick up opportunistically):** DuckDB/Parquet
+  repository backends (`storage/duckdb_repository.py`, `storage/parquet_repository.py` still
+  empty — JSONL event store covers Phase 1); a couple of replay display ties for lapped/retired
+  cars; the dashboard replay page is written + compiles but is not run in CI (no Streamlit in
+  the CI/dev env — same policy as Docker).
 
 ### Verification status (be honest — do not claim unverified work)
 | Capability | Verified how | Status |
 |---|---|---|
 | `uv sync --dev` installs | local | ✅ verified (Python 3.12.13, uv.lock committed) |
-| `ruff` / `mypy(strict)` / `pytest` / `bandit` green | local `make ci` | ✅ verified — 21 tests pass, 0 lint/type/security issues |
+| `ruff` / `mypy(strict)` / `pytest` / `bandit` green | local `make ci` | ✅ verified — 42 tests pass + 1 gated skip, 0 lint/type/security issues |
 | `scripts/bootstrap.py` runs | local | ✅ verified |
+| Deterministic replay of the synthetic fixture | unit tests | ✅ verified |
+| **Real FastF1 download + replay** (2023 Bahrain GP) | `RUN_FASTF1_TESTS=1` integration test + manual `download_history.py`/`replay_race.py` | ✅ verified — 1347 events, 0 quality errors, replayed podium **VER/PER/ALO** matches reality |
 | Docker image builds | CI `deploy.yml` / `ci.yml` docker-build job | **NOT verified locally** — no Docker on the authoring machine |
-| One full historical race bundled | Phase 1 | not started (synthetic fixture only) |
+| Dashboard replay page renders | needs `--extra dashboard` (Streamlit) | **compiles + lints; not run-verified** (Streamlit not in CI env) |
 
 ---
 
@@ -50,14 +56,14 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 ## Phase 1 — Historical F1 data & replay
 **Deliverable:** *A complete race can be replayed locally without external credentials.*
 
-- [ ] FastF1 adapter (`ingestion/fastf1_adapter.py`) — schedule, laps, sectors, telemetry, tyres, weather, track status, race control; caching on
-- [ ] Normalize one complete race Pandas→Polars/Parquet with stable IDs
-- [ ] Append-only event store (`storage/event_store.py`) — immutable domain events
-- [ ] Deterministic race-state reducer (`domain/race_state.py`): `(RaceState, Event) -> RaceState`
-- [ ] Deterministic replay (same event log + seed ⇒ identical state)
-- [ ] Data-quality checks + report (`ingestion/normalization.py`, checks module)
-- [ ] Basic replay page in the dashboard
-- [ ] `scripts/download_history.py`, `scripts/replay_race.py`
+- [x] FastF1 adapter (`ingestion/fastf1_adapter.py`) — laps, positions, tyres, pit stops, weather, track status, race control; caching on; t0-anchored absolute times. *(telemetry/sector events deferred to when a model needs them)*
+- [x] Normalize one complete race → domain events with stable IDs (meeting/session/driver/constructor). *(persisted as JSONL; DuckDB/Parquet repository backends deferred — see Current status)*
+- [x] Append-only event store (`storage/event_store.py`) — immutable domain events + JSONL load/save
+- [x] Deterministic race-state reducer (`domain/race_state.py`): `apply_event(state, event) -> state`
+- [x] Deterministic replay (same event log ⇒ identical state + snapshot id) — unit-tested, order-independent
+- [x] Data-quality checks + report (`ingestion/normalization.py`) — 8 check classes
+- [~] Basic replay page in the dashboard (`dashboard/app.py`) — written, compiles, lints; not run in CI (no Streamlit env)
+- [x] `scripts/download_history.py` (real FastF1), `scripts/replay_race.py` (offline replay) — both verified
 
 ## Phase 2 — Baseline probabilities
 **Deliverable:** *Evaluated, calibrated historical probabilities.*
