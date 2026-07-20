@@ -75,6 +75,17 @@ The autonomous build makes sensible technical calls here rather than blocking on
   Bahrain 2023 (VER favourite mid-race, DNF ≈ input). Simplest approach meeting the deliverable.
 - **Status:** done (Phase 3). Future: have the adapter emit `DriverRetired`; add a particle filter.
 
+### D-012 News pipeline: rule-based, point-in-time before supersession
+- **Decision:** the default extractor is deterministic and rule-based (keyword + entity + prior);
+  an optional hosted-LLM extractor sits behind the same `EventExtractor` Protocol but is never
+  required. The pipeline filters events to those observable at `as_of` **before** resolving
+  supersession, so a future confirmation can never retroactively supersede a rumour that was
+  current at `as_of`. Effect sizes are only assigned when a configured prior exists; unconfirmed
+  events get scaled-down impact, widened uncertainty, and faster time decay.
+- **Rationale:** reproducible, offline-testable, and leak-correct (this realises D-008 for news).
+- **Status:** done (Phase 4). Verified: a confirmed upgrade moves BO4's win prob; telemetry
+  confirms/reverses the pace prior. Real FIA/RSS adapters + LLM extractor are future work.
+
 ### D-008 Deterministic-first, LLM-optional
 - **Decision:** the default news event extractor is rule-based and deterministic; a hosted LLM extractor is an optional, cached, schema-validated alternative. Explainability contributions are computed numerically; an LLM may only phrase verified numbers.
 - **Rationale:** reproducibility, anti-fabrication, offline CI.

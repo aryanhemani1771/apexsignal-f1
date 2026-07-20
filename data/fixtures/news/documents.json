@@ -1,0 +1,80 @@
+{
+  "meta": {
+    "note": "Synthetic, deterministic news fixtures. Invented drivers/teams — NOT real people. Used to demo the news pipeline offline.",
+    "roster": {
+      "driver_aliases": {
+        "axel rensu": "AX7", "rensu": "AX7", "ax7": "AX7",
+        "bo renner": "BO4", "renner": "BO4", "bo4": "BO4",
+        "cade voss": "CX3", "voss": "CX3", "cx3": "CX3"
+      },
+      "constructor_aliases": {
+        "apex racing": "apex_racing", "borealis": "borealis", "vortex": "vortex"
+      }
+    }
+  },
+  "documents": [
+    {
+      "title": "Axel Rensu handed grid penalty for the Demo Grand Prix",
+      "text": "The stewards ruled that Axel Rensu will start with a grid penalty after a new power unit was fitted. It is official.",
+      "source_url": "https://example.org/fia/decision-1",
+      "source_class": "fia_document",
+      "published_at": "2099-01-01T09:00:00+00:00",
+      "first_seen_at": "2099-01-01T09:05:00+00:00",
+      "meeting_id": "demo-2099-01"
+    },
+    {
+      "title": "Rumour: Borealis floor upgrade for Bo Renner could bring gains",
+      "text": "Reportedly, Borealis may run a new floor upgrade for Bo Renner. The team could find pace, though nothing is confirmed.",
+      "source_url": "https://example.org/aggregator/rumour-1",
+      "source_class": "aggregator",
+      "published_at": "2099-01-01T10:00:00+00:00",
+      "first_seen_at": "2099-01-01T10:10:00+00:00",
+      "meeting_id": "demo-2099-01"
+    },
+    {
+      "title": "Borealis confirms new floor upgrade for Bo Renner",
+      "text": "Borealis has confirmed an aerodynamic upgrade for Bo Renner for the Demo Grand Prix. It is official.",
+      "source_url": "https://example.org/team/borealis-upgrade",
+      "source_class": "official_team",
+      "published_at": "2099-01-01T15:00:00+00:00",
+      "first_seen_at": "2099-01-01T15:05:00+00:00",
+      "meeting_id": "demo-2099-01"
+    },
+    {
+      "title": "Reliability concern flagged for Cade Voss",
+      "text": "A specialist report notes a reliability concern on the Cade Voss power unit after data from Friday running.",
+      "source_url": "https://example.org/specialist/reliability-1",
+      "source_class": "specialist_pub",
+      "published_at": "2099-01-01T12:00:00+00:00",
+      "first_seen_at": "2099-01-01T12:15:00+00:00",
+      "meeting_id": "demo-2099-01"
+    },
+    {
+      "title": "Rain expected for Sunday's Demo Grand Prix",
+      "text": "Forecasters say rain is expected on Sunday, raising the chance of a wet race.",
+      "source_url": "https://example.org/general/weather-1",
+      "source_class": "general_pub",
+      "published_at": "2099-01-01T11:00:00+00:00",
+      "first_seen_at": "2099-01-01T11:30:00+00:00",
+      "meeting_id": "demo-2099-01"
+    },
+    {
+      "title": "Axel Rensu feeling unwell ahead of the race",
+      "text": "A named reporter says Axel Rensu is feeling unwell with a minor illness but intends to race.",
+      "source_url": "https://example.org/journalist/illness-1",
+      "source_class": "named_journalist",
+      "published_at": "2099-01-01T13:00:00+00:00",
+      "first_seen_at": "2099-01-01T13:20:00+00:00",
+      "meeting_id": "demo-2099-01"
+    },
+    {
+      "title": "Borealis looking strong and confident with impressive pace",
+      "text": "The paddock mood is optimistic: Borealis looked strong and confident, with impressive, flying long-run pace.",
+      "source_url": "https://example.org/aggregator/mood-1",
+      "source_class": "aggregator",
+      "published_at": "2099-01-01T14:00:00+00:00",
+      "first_seen_at": "2099-01-01T14:10:00+00:00",
+      "meeting_id": "demo-2099-01"
+    }
+  ]
+}

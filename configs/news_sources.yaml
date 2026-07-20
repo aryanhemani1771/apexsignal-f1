@@ -6,7 +6,7 @@ version: 1
 source_classes:
   fia_document:        { reliability: 0.98, note: "Official FIA decision/technical document" }
   official_team:       { reliability: 0.95, note: "Official team or driver statement" }
-  official_championship:{ reliability: 0.93, note: "Official championship source" }
+  official_championship: { reliability: 0.93, note: "Official championship source" }
   named_journalist:    { reliability: 0.80, note: "Named reputable motorsport journalist" }
   specialist_pub:      { reliability: 0.70, note: "Established specialist publication" }
   general_pub:         { reliability: 0.55, note: "General news publication" }

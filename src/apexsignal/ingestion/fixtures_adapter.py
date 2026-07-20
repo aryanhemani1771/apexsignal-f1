@@ -10,11 +10,14 @@ import json
 from pathlib import Path
 
 from apexsignal.domain.events import DomainEvent
+from apexsignal.domain.news import NewsDocument
+from apexsignal.intelligence.entity_resolution import Roster
 
 # repo_root/src/apexsignal/ingestion/fixtures_adapter.py -> repo_root
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _FIXTURES_DIR = _REPO_ROOT / "data" / "fixtures"
 DEMO_RACE_PATH = _FIXTURES_DIR / "demo_race" / "events.json"
+DEMO_NEWS_PATH = _FIXTURES_DIR / "news" / "documents.json"
 
 
 def load_events_json(path: str | Path) -> list[DomainEvent]:
@@ -26,3 +29,15 @@ def load_events_json(path: str | Path) -> list[DomainEvent]:
 def demo_race_events() -> list[DomainEvent]:
     """The bundled synthetic 'Demo Grand Prix' event log."""
     return load_events_json(DEMO_RACE_PATH)
+
+
+def demo_news_documents(path: str | Path | None = None) -> list[NewsDocument]:
+    """The bundled synthetic news documents (invented drivers/teams)."""
+    raw = json.loads(Path(path or DEMO_NEWS_PATH).read_text(encoding="utf-8"))
+    return [NewsDocument.model_validate(d) for d in raw["documents"]]
+
+
+def demo_news_roster(path: str | Path | None = None) -> Roster:
+    """The invented-driver roster that matches the news fixtures."""
+    raw = json.loads(Path(path or DEMO_NEWS_PATH).read_text(encoding="utf-8"))
+    return Roster.model_validate(raw["meta"]["roster"])

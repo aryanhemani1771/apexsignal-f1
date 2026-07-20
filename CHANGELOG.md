@@ -5,6 +5,32 @@ Also serves as the agent development log (one entry per phase / work session).
 
 ## [Unreleased]
 
+### Phase 4 — News intelligence — 2026-07-19
+**Objective:** a structured news event visibly moves a model prior and is later confirmed/rejected by telemetry.
+
+Added:
+- `intelligence/event_ontology.py` (34 event classes, fundamental vs. context) and
+  `domain/news.py` (NewsDocument + strict `ExtractedF1Event` schema with provenance).
+- `intelligence/event_extractor.py` — deterministic rule-based extractor (14 event classes,
+  entity resolution, prior-backed effect sizes, strict "unknown" handling); `EventExtractor`
+  Protocol for an optional hosted-LLM extractor.
+- `intelligence/entity_resolution.py`, `source_scoring.py` (from `configs/news_sources.yaml`),
+  `deduplication.py`, `contradiction.py` (contradictions + supersession), `impact_priors.py`.
+- `intelligence/event_impact.py` — Bayesian shrinkage event→parameter mapping (confidence,
+  confirmation scaling, time decay); `telemetry_confirmation.py` (news proposes, telemetry
+  confirms — normal-normal update); `sentiment.py` (public track, kept separate).
+- `services/news_service.py` — point-in-time pipeline (availability filter before supersession)
+  + `apply_impacts_to_sim_input`; `scripts/refresh_news.py`; dashboard "News intelligence" view.
+- Synthetic news fixtures (`data/fixtures/news/`, invented drivers) + loaders.
+- Tests: extraction, entity/source scoring, impact mapping, telemetry, sentiment, and a
+  full-pipeline test proving a confirmed upgrade moves BO4's win probability.
+
+Verified:
+- `make ci` green — 105 tests pass + 2 gated skips; ruff/mypy(strict)/bandit clean.
+- **Deliverable demonstrated** (`refresh_news.py`): confirmed aero upgrade moves BO4 win
+  0.26→0.33; a superseded rumour drops out; telemetry observation confirms (posterior −0.087)
+  or reverses (+0.035) the proposed pace prior. Sentiment shown on a separate track.
+
 ### Phase 3 — Race simulation & in-race pricing — 2026-07-19
 **Objective:** price multiple contracts from simulated race continuations.
 

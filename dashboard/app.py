@@ -10,12 +10,17 @@ Runs in fixture mode with zero credentials. Later phases add the remaining pages
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 import streamlit as st
 
 import theme  # local module; `streamlit run dashboard/app.py` puts this dir on sys.path
 from apexsignal.domain.events import EventType
 from apexsignal.domain.race_state import replay
-from apexsignal.services import evaluation_report, pricing_service, race_service
+from apexsignal.ingestion.fixtures_adapter import demo_news_documents, demo_news_roster
+from apexsignal.intelligence.entity_resolution import EntityResolver
+from apexsignal.intelligence.event_extractor import RuleBasedExtractor
+from apexsignal.services import evaluation_report, news_service, pricing_service, race_service
 from apexsignal.simulation.engine import SimConfig
 
 
@@ -41,6 +46,57 @@ def _model_performance() -> None:
         if rows:
             st.markdown(f"**{contract.title()} contract** — Brier / log-loss by model")
             st.dataframe(rows, use_container_width=True, hide_index=True)
+
+
+def _news_intelligence() -> None:
+    st.subheader("News intelligence")
+    docs = demo_news_documents()
+    extractor = RuleBasedExtractor(resolver=EntityResolver(demo_news_roster()))
+    as_of = max(d.first_seen_at for d in docs) + timedelta(hours=1)
+    result = news_service.run_pipeline(docs, extractor=extractor, as_of=as_of)
+
+    st.caption("Fundamental events move the fair-value model; sentiment is shown separately.")
+    st.markdown("**Timeline (fundamental events)**")
+    st.dataframe(
+        [
+            {
+                "event": t.event_type.value,
+                "who": ", ".join(t.drivers or t.constructors) or "field",
+                "confirmed": t.is_confirmed,
+                "evidence": t.evidence_count,
+                "seen": t.first_seen_at.isoformat(),
+            }
+            for t in result.timeline
+        ],
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.markdown("**Per-driver impact (parameter deltas)**")
+    st.dataframe(
+        [
+            {
+                "driver": d,
+                "pace_delta_s": round(i.pace_delta_seconds_per_lap, 3),
+                "grid_delta": round(i.grid_position_delta, 2),
+                "dnf_log_odds": round(i.dnf_log_odds_delta, 2),
+            }
+            for d, i in result.impacts.items()
+        ],
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.markdown("**Public sentiment (separate track — not fair value)**")
+    st.dataframe(
+        [
+            {"headline": title, "sentiment": s.label, "score": round(s.score, 2)}
+            for title, s in result.sentiment.items()
+            if s.label != "neutral"
+        ],
+        use_container_width=True,
+        hide_index=True,
+    )
 
 
 def _contract_pricing() -> None:
@@ -127,6 +183,7 @@ def main() -> None:
     views = {
         "Race replay": _race_replay,
         "Contract pricing": _contract_pricing,
+        "News intelligence": _news_intelligence,
         "Model performance": _model_performance,
     }
     choice = "Race replay" if embed else st.sidebar.radio("View", list(views))

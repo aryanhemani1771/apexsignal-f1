@@ -1,0 +1,79 @@
+"""F1 news-event ontology.
+
+Structured event classes the extractor maps text into. Events are split into **fundamental**
+(they can move the fair-value model) and everything else (context/narrative). Public sentiment
+is handled separately (``intelligence/sentiment.py``) and never feeds the fair-value model.
+"""
+
+from __future__ import annotations
+
+from enum import StrEnum
+
+
+class F1EventType(StrEnum):
+    AERODYNAMIC_UPGRADE = "AERODYNAMIC_UPGRADE"
+    POWER_UNIT_UPGRADE = "POWER_UNIT_UPGRADE"
+    CHASSIS_UPGRADE = "CHASSIS_UPGRADE"
+    COOLING_UPGRADE = "COOLING_UPGRADE"
+    SUSPENSION_UPGRADE = "SUSPENSION_UPGRADE"
+    UPGRADE_UNCONFIRMED = "UPGRADE_UNCONFIRMED"
+    UPGRADE_UNDERPERFORMED = "UPGRADE_UNDERPERFORMED"
+    PRACTICE_CRASH = "PRACTICE_CRASH"
+    QUALIFYING_CRASH = "QUALIFYING_CRASH"
+    RACE_ACCIDENT = "RACE_ACCIDENT"
+    CAR_DAMAGE = "CAR_DAMAGE"
+    DRIVER_INJURY = "DRIVER_INJURY"
+    DRIVER_ILLNESS = "DRIVER_ILLNESS"
+    DRIVER_FATIGUE = "DRIVER_FATIGUE"
+    GRID_PENALTY = "GRID_PENALTY"
+    TIME_PENALTY = "TIME_PENALTY"
+    DISQUALIFICATION_RISK = "DISQUALIFICATION_RISK"
+    GEARBOX_CHANGE = "GEARBOX_CHANGE"
+    POWER_UNIT_CHANGE = "POWER_UNIT_CHANGE"
+    RELIABILITY_WARNING = "RELIABILITY_WARNING"
+    HYDRAULIC_ISSUE = "HYDRAULIC_ISSUE"
+    BRAKE_ISSUE = "BRAKE_ISSUE"
+    TYRE_CONCERN = "TYRE_CONCERN"
+    SETUP_PROBLEM = "SETUP_PROBLEM"
+    BALANCE_PROBLEM = "BALANCE_PROBLEM"
+    WEATHER_FORECAST_CHANGE = "WEATHER_FORECAST_CHANGE"
+    RAIN_EXPECTED = "RAIN_EXPECTED"
+    TEAM_ORDER_RISK = "TEAM_ORDER_RISK"
+    PIT_LANE_START = "PIT_LANE_START"
+    PARC_FERME_CHANGE = "PARC_FERME_CHANGE"
+    STEWARD_INVESTIGATION = "STEWARD_INVESTIGATION"
+    STEWARD_DECISION = "STEWARD_DECISION"
+    RACE_CONTROL_INCIDENT = "RACE_CONTROL_INCIDENT"
+    CONTRACT_RULE_CLARIFICATION = "CONTRACT_RULE_CLARIFICATION"
+
+
+# Event classes that can modify the fair-value model (vs. purely contextual ones).
+FUNDAMENTAL_EVENTS: frozenset[F1EventType] = frozenset(
+    {
+        F1EventType.AERODYNAMIC_UPGRADE,
+        F1EventType.POWER_UNIT_UPGRADE,
+        F1EventType.CHASSIS_UPGRADE,
+        F1EventType.COOLING_UPGRADE,
+        F1EventType.SUSPENSION_UPGRADE,
+        F1EventType.UPGRADE_UNDERPERFORMED,
+        F1EventType.PRACTICE_CRASH,
+        F1EventType.QUALIFYING_CRASH,
+        F1EventType.CAR_DAMAGE,
+        F1EventType.DRIVER_INJURY,
+        F1EventType.DRIVER_ILLNESS,
+        F1EventType.GRID_PENALTY,
+        F1EventType.TIME_PENALTY,
+        F1EventType.GEARBOX_CHANGE,
+        F1EventType.POWER_UNIT_CHANGE,
+        F1EventType.RELIABILITY_WARNING,
+        F1EventType.HYDRAULIC_ISSUE,
+        F1EventType.BRAKE_ISSUE,
+        F1EventType.RAIN_EXPECTED,
+        F1EventType.PIT_LANE_START,
+        F1EventType.STEWARD_INVESTIGATION,
+    }
+)
+
+
+def is_fundamental(event_type: F1EventType) -> bool:
+    return event_type in FUNDAMENTAL_EVENTS
