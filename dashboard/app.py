@@ -16,6 +16,7 @@ from datetime import timedelta
 import streamlit as st
 
 import theme  # local module; `streamlit run dashboard/app.py` puts this dir on sys.path
+from apexsignal.allocation.constraints import RiskTolerance
 from apexsignal.domain.events import EventType
 from apexsignal.domain.race_state import replay
 from apexsignal.ingestion.fixtures_adapter import demo_news_documents, demo_news_roster
@@ -24,6 +25,7 @@ from apexsignal.intelligence.entity_resolution import EntityResolver
 from apexsignal.intelligence.event_extractor import RuleBasedExtractor
 from apexsignal.services import evaluation_report, news_service, pricing_service, race_service
 from apexsignal.services.opportunity_service import scan_opportunities
+from apexsignal.services.portfolio_service import build_allocation
 from apexsignal.simulation.engine import RaceSimulator, SimConfig, SimInput
 from apexsignal.simulation.payoff_matrix import price_contracts
 
@@ -50,6 +52,70 @@ def _model_performance() -> None:
         if rows:
             st.markdown(f"**{contract.title()} contract** — Brier / log-loss by model")
             st.dataframe(rows, use_container_width=True, hide_index=True)
+
+
+def _demo_prices_result() -> object:
+    d = 10
+    sim = SimInput(
+        driver_ids=[f"D{i}" for i in range(d)],
+        total_laps=40,
+        current_lap=15,
+        clean_air_pace=[90.0 + i * 0.18 for i in range(d)],
+        tyre_compound=["medium"] * d,
+        tyre_age=[10] * d,
+        pit_count=[0] * d,
+        gap_to_leader=[i * 1.5 for i in range(d)],
+        retired=[False] * d,
+        race_dnf_prob=[0.09] * d,
+    )
+    return RaceSimulator(SimConfig(n_paths=3000, seed=1)).simulate(sim)
+
+
+def _simulated_allocation() -> None:
+    st.subheader("Simulated allocation")
+    st.caption(
+        "Research/paper-trading only — a **model-ranked simulated allocation**, never advice. "
+        "Fractional Kelly (no full Kelly), correlation-aware caps from configs/risk_limits.yaml."
+    )
+    c1, c2, c3 = st.columns(3)
+    bankroll = c1.number_input("Research bankroll", min_value=100.0, value=10_000.0, step=100.0)
+    tol = c2.selectbox("Risk tolerance", [t.value for t in RiskTolerance], index=0)
+    max_deploy = c3.slider("Max total deployment", 0.02, 0.5, 0.10, 0.01)
+
+    result = _demo_prices_result()
+    alloc = asyncio.run(
+        build_allocation(
+            result,
+            bankroll=bankroll,
+            tolerance=RiskTolerance(tol),
+            max_deployment_override=max_deploy,
+        )
+    )
+    st.write(alloc.message)
+    if alloc.positions:
+        st.dataframe(
+            [
+                {
+                    "market": p.market_id,
+                    "contracts": p.contracts,
+                    "eff_price": round(p.effective_price, 3),
+                    "model": round(p.model_probability, 3),
+                    "cons_edge": round(p.conservative_edge, 3),
+                    "stake": round(p.stake, 2),
+                    "max_loss": round(p.max_loss, 2),
+                    "EV": round(p.expected_value, 2),
+                }
+                for p in alloc.positions
+            ],
+            use_container_width=True,
+            hide_index=True,
+        )
+    r = alloc.risk
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Deployed", f"{r.total_stake:,.0f}")
+    m2.metric("Cash retained", f"{r.cash_retained:,.0f}")
+    m3.metric("VaR (95%)", f"{r.var_95:,.0f}")
+    m4.metric("Expected shortfall", f"{r.expected_shortfall_95:,.0f}")
 
 
 def _opportunity_scanner() -> None:
@@ -234,6 +300,7 @@ def main() -> None:
         "Race replay": _race_replay,
         "Contract pricing": _contract_pricing,
         "Opportunity scanner": _opportunity_scanner,
+        "Simulated allocation": _simulated_allocation,
         "News intelligence": _news_intelligence,
         "Model performance": _model_performance,
     }

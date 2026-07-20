@@ -5,6 +5,30 @@ Also serves as the agent development log (one entry per phase / work session).
 
 ## [Unreleased]
 
+### Phase 6 — Allocation & risk — 2026-07-19
+**Objective:** a user-entered research amount → transparent simulated allocation, or a no-opportunity result.
+
+Added:
+- `allocation/constraints.py` — `RiskTolerance` + `RiskLimits` from `configs/risk_limits.yaml`
+  (kelly fractions hard-capped at 0.25; exposure caps; thresholds).
+- `allocation/kelly.py` — full-Kelly fraction + fractional-Kelly stake (no full Kelly).
+- `simulation/payoff_matrix.py` — per-path `contract_payoff` + `build_payoff_matrix` (covariance
+  substrate; every contract evaluated on the same paths).
+- `allocation/optimizer.py` — correlation-aware greedy allocator: fractional Kelly on the
+  conservative probability, clipped to per-market/total/driver/cluster caps, integer contracts;
+  returns positions or `NO_ALLOCATION`.
+- `allocation/stress_tests.py` — portfolio P&L paths → VaR(95%) + expected shortfall.
+- `services/portfolio_service.py` — bankroll → allocation (price → scan → allocate).
+- Dashboard "Simulated allocation" view (bankroll / tolerance / max-deployment inputs).
+- Tests: Kelly math, limits (never full Kelly), payoff matrix, cap enforcement, bankroll safety,
+  aggressive ≥ conservative, no-opportunity path, end-to-end service.
+
+Verified:
+- `make ci` green — 125 tests pass + 2 gated skips; ruff/mypy(strict)/bandit clean.
+- **$10k / moderate**: 8 simulated positions, exactly 10% deployed, every cap respected, integer
+  contracts, VaR95 $237 / ES95 $280 computed from the payoff paths. Kelly sizing scales with
+  edge (low-edge markets get tiny stakes). Labeled "model-ranked simulated allocation" only.
+
 ### Phase 5 — Prediction-market integration — 2026-07-19
 **Objective:** compare model prices to real public market data or synthetic replay books.
 

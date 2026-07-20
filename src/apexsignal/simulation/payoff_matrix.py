@@ -10,13 +10,61 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 import numpy as np
+from numpy.typing import NDArray
 from pydantic import BaseModel, Field
 
+from apexsignal.domain.markets import ContractType
 from apexsignal.models.ranking import pairwise_ahead_matrix
 from apexsignal.simulation.engine import SimulationResult
 
 PODIUM = 3
 POINTS = 10
+
+
+def contract_payoff(
+    result: SimulationResult,
+    contract_type: ContractType,
+    driver_id: str | None = None,
+    *,
+    gains_threshold: int = 3,
+) -> NDArray[np.float64]:
+    """Per-path 0/1 payoff vector for a single contract (used to build covariance)."""
+    if contract_type is ContractType.SAFETY_CAR:
+        return np.asarray(result.safety_car_occurred, dtype=np.float64)
+    if driver_id is None or driver_id not in result.driver_ids:
+        return np.zeros(result.n_paths, dtype=np.float64)
+
+    j = result.driver_ids.index(driver_id)
+    positions = result.positions_array()[:, j]
+    classified = result.classified_array()[:, j]
+    start = result.start_positions[j]
+
+    if contract_type is ContractType.WIN:
+        payoff = classified & (positions == 1)
+    elif contract_type is ContractType.PODIUM:
+        payoff = classified & (positions <= PODIUM)
+    elif contract_type is ContractType.POINTS:
+        payoff = classified & (positions <= POINTS)
+    elif contract_type is ContractType.DNF:
+        payoff = ~classified
+    elif contract_type is ContractType.FASTEST_LAP:
+        payoff = np.asarray(result.fastest_lap_driver) == j
+    elif contract_type is ContractType.POSITIONS_GAINED:
+        payoff = classified & ((start - positions) >= gains_threshold)
+    else:
+        return np.zeros(result.n_paths, dtype=np.float64)
+    out: NDArray[np.float64] = payoff.astype(np.float64)
+    return out
+
+
+def build_payoff_matrix(
+    result: SimulationResult, selections: list[tuple[ContractType, str | None]]
+) -> NDArray[np.float64]:
+    """Matrix of shape (n_paths, n_selections) of 0/1 contract payoffs across paths."""
+    if not selections:
+        return np.zeros((result.n_paths, 0), dtype=np.float64)
+    cols = [contract_payoff(result, ct, did) for ct, did in selections]
+    return np.column_stack(cols)
 
 
 class DriverContractPrices(BaseModel):

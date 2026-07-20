@@ -10,18 +10,18 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 
 ## Current status
 
-- **Phase:** 5 (Prediction-market integration) — **COMPLETE** (synthetic books; safety guards enforced).
+- **Phase:** 6 (Allocation & risk) — **COMPLETE** (bankroll → simulated allocation verified).
 - **Last agent:** Claude Code (Opus 4.8), 2026-07-19.
-- **Next action:** start **Phase 6** — allocation & risk: effective price after fees/slippage
-  (done in Phase 5); conservative EV; fractional Kelly (0.10/0.20/0.25, no full Kelly);
-  constraints from `configs/risk_limits.yaml`; correlation-aware constrained allocator using the
-  simulation payoff covariance; stress tests; allocation dashboard page; explicit "No qualifying
-  opportunity" path. The `Opportunity`/`ContractPrices`/`PaperExecutor` from Phase 5 feed it.
+- **Next action:** start **Phase 7** — portfolio deployment: single-container deploy + public
+  demo mode + health checks + graceful API fallbacks; screenshots + portfolio copy; finalize
+  MODEL_CARD / RISK_DISCLOSURE; run the full demo and record **actual measured** metrics; fill
+  the resume-bullet brackets. Mostly packaging/docs — the nine analytical pages exist.
 - **Deferred (non-blocking):** DuckDB/Parquet backends; LightGBM GBM baseline (D-009); widen
-  Phase 2 evaluation; adapter should emit explicit `DriverRetired` (D-011); latent-pace particle
-  filter; optional hosted-LLM extractor (D-012); real FIA/RSS/GDELT news adapters; live Kalshi
-  WebSocket streaming + demo order signing (public REST + demo guard shipped; needs demo creds);
-  richer bundled demo race for pricing; dashboard not run in CI.
+  Phase 2 evaluation; explicit `DriverRetired` events (D-011); latent-pace particle filter;
+  hosted-LLM extractor (D-012); real FIA/RSS/GDELT news adapters; Kalshi WebSocket + demo order
+  signing (D-013); constructor-exposure cap needs a driver→constructor lineup map (driver +
+  cluster caps enforced); full event-driven backtester (`run_backtest.py` still a stub — walk-
+  forward eval covers Phase 2); richer bundled demo race; Docker + dashboard not run in CI.
 
 ### Verification status (be honest — do not claim unverified work)
 | Capability | Verified how | Status |
@@ -37,6 +37,7 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 | **News moves a prior + telemetry confirms** | `scripts/refresh_news.py` + unit tests | ✅ verified — confirmed upgrade: BO4 win 0.26→0.33; telemetry obs confirms/reverses the pace prior |
 | **Model-vs-market opportunity scan** | `scripts/refresh_markets.py` + unit tests | ✅ verified — 41 synthetic markets → 9 ranked opportunities after fees/slippage/mapping gate; "no opportunity" path works |
 | Safety guards (no live trading, Polymarket read-only, mapping gate) | unit tests | ✅ verified — `LiveTradingDisabledError` on live Kalshi; title-only markets forced to manual review |
+| **Bankroll → simulated allocation** | `services/portfolio_service.py` + unit tests | ✅ verified — $10k → 8 positions, exactly 10% deployed, all caps respected, integer contracts, VaR95 $237 / ES95 $280 from payoff paths; "no qualifying opportunity" path works |
 | Docker image builds | CI `deploy.yml` / `ci.yml` docker-build job | **NOT verified locally** — no Docker on the authoring machine |
 | Dashboard (replay + pricing + model perf) renders | needs `--extra dashboard` (Streamlit) | **compiles + lints; not run-verified** (Streamlit not in CI env) |
 
@@ -116,11 +117,12 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 ## Phase 6 — Allocation & risk
 **Deliverable:** *A user-entered research amount → transparent simulated allocation OR a no-opportunity result.*
 
-- [ ] Effective price after fees/slippage · conservative EV (lower-bound based)
-- [ ] Fractional Kelly (0.10/0.20/0.25; no full Kelly)
-- [ ] Risk constraints from `configs/risk_limits.yaml`
-- [ ] Payoff-covariance from simulation → correlation-aware constrained allocator
-- [ ] Stress tests · allocation dashboard page · "No qualifying opportunity" path
+- [x] Effective price after fees/slippage (Phase 5) · conservative EV, lower-bound based (`pricing/edge.py`)
+- [x] Fractional Kelly (`allocation/kelly.py`) — 0.10/0.20/0.25, hard-capped; full Kelly never offered
+- [x] Risk constraints from `configs/risk_limits.yaml` (`allocation/constraints.py`)
+- [x] Payoff matrix + covariance from simulation (`simulation/payoff_matrix.py`) → correlation-aware greedy allocator with local caps (`allocation/optimizer.py`)
+- [x] Stress tests VaR/ES (`allocation/stress_tests.py`) · allocation dashboard page · explicit "No qualifying opportunity" · `services/portfolio_service.py` (bankroll→allocation)
+- [~] Constructor-exposure cap deferred (needs a driver→constructor lineup map); per-driver + correlated-cluster caps enforced. Full event-driven backtester (`run_backtest.py`) still a stub.
 
 ## Phase 7 — Portfolio deployment
 **Deliverable:** *A recruiter opens the hosted dashboard and understands it in two minutes.*
