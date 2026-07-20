@@ -1,7 +1,7 @@
-"""ApexSignal F1 dashboard — Phases 1-2: race replay + model performance.
+"""ApexSignal F1 dashboard — race replay, pricing, opportunities, news, model performance.
 
-Runs in fixture mode with zero credentials. Later phases add the remaining pages
-(pricing, opportunities, allocation, news, architecture).
+Runs in fixture mode with zero credentials. Remaining pages (allocation, architecture) land in
+later phases.
 
     uv run --extra dashboard streamlit run dashboard/app.py
 
@@ -10,6 +10,7 @@ Runs in fixture mode with zero credentials. Later phases add the remaining pages
 
 from __future__ import annotations
 
+import asyncio
 from datetime import timedelta
 
 import streamlit as st
@@ -18,10 +19,13 @@ import theme  # local module; `streamlit run dashboard/app.py` puts this dir on 
 from apexsignal.domain.events import EventType
 from apexsignal.domain.race_state import replay
 from apexsignal.ingestion.fixtures_adapter import demo_news_documents, demo_news_roster
+from apexsignal.ingestion.synthetic_market import SyntheticMarketAdapter, SyntheticMarketConfig
 from apexsignal.intelligence.entity_resolution import EntityResolver
 from apexsignal.intelligence.event_extractor import RuleBasedExtractor
 from apexsignal.services import evaluation_report, news_service, pricing_service, race_service
-from apexsignal.simulation.engine import SimConfig
+from apexsignal.services.opportunity_service import scan_opportunities
+from apexsignal.simulation.engine import RaceSimulator, SimConfig, SimInput
+from apexsignal.simulation.payoff_matrix import price_contracts
 
 
 def _embed_mode() -> bool:
@@ -46,6 +50,52 @@ def _model_performance() -> None:
         if rows:
             st.markdown(f"**{contract.title()} contract** — Brier / log-loss by model")
             st.dataframe(rows, use_container_width=True, hide_index=True)
+
+
+def _opportunity_scanner() -> None:
+    st.subheader("Opportunity scanner (model vs. market)")
+    st.caption(
+        "Synthetic market books (seeded to misprice vs. the model). Kalshi public / Polymarket "
+        "read-only data can be substituted with the `api` extra. Allocations are simulated only."
+    )
+    d = 10
+    sim = SimInput(
+        driver_ids=[f"D{i}" for i in range(d)],
+        total_laps=40,
+        current_lap=15,
+        clean_air_pace=[90.0 + i * 0.18 for i in range(d)],
+        tyre_compound=["medium"] * d,
+        tyre_age=[10] * d,
+        pit_count=[0] * d,
+        gap_to_leader=[i * 1.5 for i in range(d)],
+        retired=[False] * d,
+        race_dnf_prob=[0.09] * d,
+    )
+    prices = price_contracts(RaceSimulator(SimConfig(n_paths=3000, seed=1)).simulate(sim))
+    min_edge = st.slider("Minimum conservative edge", 0.0, 0.2, 0.03, 0.01)
+    adapter = SyntheticMarketAdapter(
+        prices, config=SyntheticMarketConfig(mispricing_sd=0.08, seed=7)
+    )
+    scan = asyncio.run(
+        scan_opportunities(adapter, prices, min_conservative_edge=min_edge, min_liquidity=100)
+    )
+    st.write(f"Scanned {scan.n_markets} markets · {scan.message}")
+    st.dataframe(
+        [
+            {
+                "market": o.market_id,
+                "model": round(o.model_probability, 3),
+                "conservative": round(o.conservative_probability, 3),
+                "eff_ask": round(o.effective_ask, 3),
+                "edge": round(o.conservative_edge, 3),
+                "liquidity": o.liquidity,
+                "score": round(o.score, 4),
+            }
+            for o in scan.opportunities
+        ],
+        use_container_width=True,
+        hide_index=True,
+    )
 
 
 def _news_intelligence() -> None:
@@ -183,6 +233,7 @@ def main() -> None:
     views = {
         "Race replay": _race_replay,
         "Contract pricing": _contract_pricing,
+        "Opportunity scanner": _opportunity_scanner,
         "News intelligence": _news_intelligence,
         "Model performance": _model_performance,
     }

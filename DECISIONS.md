@@ -86,6 +86,20 @@ The autonomous build makes sensible technical calls here rather than blocking on
 - **Status:** done (Phase 4). Verified: a confirmed upgrade moves BO4's win prob; telemetry
   confirms/reverses the pace prior. Real FIA/RSS adapters + LLM extractor are future work.
 
+### D-013 Markets: synthetic-first, read-only adapters, mapping is a safety gate
+- **Decision:** all market-data adapters implement one read-only `MarketDataAdapter` Protocol.
+  The synthetic adapter (books derived from model prices, seeded to misprice) is the always-works
+  offline path and the CI-tested core; Kalshi public REST and Polymarket read-only are real
+  adapters with lazy `httpx`, tested via their pure parse helpers. Contract mapping is treated as
+  a **safety component**: a market is never mapped on title similarity alone — missing/weak
+  resolution rules or non-binary labels drive confidence below the gate, forcing manual review,
+  and the opportunity scanner never ranks a below-gate mapping. Execution is paper/synthetic/
+  Kalshi-**demo** only; the live path raises `LiveTradingDisabledError`. Polymarket exposes no
+  trading methods and disables itself gracefully when geo-restricted (no bypass).
+- **Rationale:** realises the non-negotiable safety rules in code, and keeps the deliverable
+  verifiable offline. Conservative edge = lower-bound model prob − effective ask (after fees/slippage).
+- **Status:** done (Phase 5). Deferred: Kalshi WebSocket + demo order signing (need demo creds).
+
 ### D-008 Deterministic-first, LLM-optional
 - **Decision:** the default news event extractor is rule-based and deterministic; a hosted LLM extractor is an optional, cached, schema-validated alternative. Explainability contributions are computed numerically; an LLM may only phrase verified numbers.
 - **Rationale:** reproducibility, anti-fabrication, offline CI.

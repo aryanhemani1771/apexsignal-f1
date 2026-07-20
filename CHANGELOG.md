@@ -5,6 +5,34 @@ Also serves as the agent development log (one entry per phase / work session).
 
 ## [Unreleased]
 
+### Phase 5 — Prediction-market integration — 2026-07-19
+**Objective:** compare model prices to real public market data or synthetic replay books.
+
+Added:
+- `domain/markets.py` — unified read-only `MarketDataAdapter` Protocol + Market/OrderBook/
+  MarketEvent/ContractType (prices normalised to probabilities).
+- `ingestion/synthetic_market.py` — always-offline adapter; books from model prices, seeded to
+  misprice so there are edges to find.
+- `ingestion/kalshi_adapter.py` — public REST (read-only, lazy httpx, cents→prob parse) +
+  `KalshiDemoExecutor` guarded by `LiveTradingDisabledError`.
+- `ingestion/polymarket_adapter.py` — read-only + geo-availability check, graceful disable; no
+  trading methods.
+- `pricing/market_mapper.py` — rule-aware mapping with a confidence gate (never maps on title
+  alone); `pricing/fees.py`, `pricing/edge.py` (effective price, conservative probability/edge).
+- `services/opportunity_service.py` — scan model vs. market, rank by composite score, skip
+  below-gate mappings, explicit "no qualifying opportunity".
+- `execution/base.py` + `paper.py` + `synthetic.py` + `kalshi_demo.py` — paper accounting
+  (fills cross the spread) and demo/live guards.
+- `scripts/refresh_markets.py` + dashboard "Opportunity scanner" view.
+- Tests: order-book math, fees/edge, synthetic adapter, mapping gate, opportunity ranking +
+  no-opportunity, paper accounting, Kalshi cents→prob parsing, live-trading guard.
+
+Verified:
+- `make ci` green — 116 tests pass + 2 gated skips; ruff/mypy(strict)/bandit clean.
+- **Model-vs-market scan** (`refresh_markets.py`): 41 synthetic markets → 9 ranked opportunities
+  after fees/slippage and the mapping gate; top edge D6-points 16.7% (conservative). Safety
+  guards verified: live Kalshi execution raises; title-only markets forced to manual review.
+
 ### Phase 4 — News intelligence — 2026-07-19
 **Objective:** a structured news event visibly moves a model prior and is later confirmed/rejected by telemetry.
 
