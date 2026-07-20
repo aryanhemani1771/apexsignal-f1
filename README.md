@@ -39,9 +39,12 @@ measured by the code.
 
 - **Replay** — 2023 Bahrain GP: 1347 events, 0 data-quality errors, replayed podium **VER / PER /
   ALO** (matches reality). `download_history.py` + `replay_race.py`.
-- **Baseline evaluation** — walk-forward on the 2022 season (22 races, 7-race held-out test):
-  best winner-contract Brier **0.0312** (calibrated, model `elo_grid`). `train_models.py`;
-  report at `artifacts/reports/evaluation_latest.json`.
+- **Baseline evaluation** — walk-forward on **2022–2026 (102 real races, ~31 held-out test
+  races)**: calibrated winner-contract Brier **0.028** (`grid`) / **0.029** (`elo_grid`), roughly
+  half the naive baseline (0.078) and well-calibrated (ECE ≈ 0.02). Honest finding: **starting
+  grid does most of the work**; Elo form adds modest value; DNF prediction is weak. `train_models.py`.
+- **Recent-race spot check** — trained on 2022–2026, predicting the 3 most recent races:
+  **1/3 winners, 5/9 podium slots** (small sample, illustrative). `predict_recent.py`.
 - **In-race pricing** — 2023 Bahrain at lap 30: **VER 0.66 / PER 0.20 / LEC 0.09** win; per-driver
   DNF ≈ the input rate. Monte Carlo runs **5000 paths × 37 laps in ~0.23s**. `price_race.py`.
 - **News → model** — a confirmed aero upgrade moves a driver's win probability **0.26 → 0.33**;

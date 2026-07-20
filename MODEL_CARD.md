@@ -32,24 +32,34 @@ permitted news metadata/excerpts. Point-in-time discipline via `first_seen_at`.
   plus breakdowns by laps-remaining / circuit type / weather / contract type.
 - Baseline comparison + ablations (no-news / sentiment / structured-event / telemetry-only / full).
 
-**First measured evaluation** — walk-forward over the **2022 season (22 races)**, 5000
-simulation paths, calibrated on validation only, scored on the final **7 test races**.
-Best model by winner Brier is `elo_grid` (Elo form + starting grid). Full report:
+**Measured evaluation** — walk-forward over **2022–2026 (102 real races, ~31 held-out test
+races)**, 5000 simulation paths, calibrated on validation only. Full report:
 `artifacts/reports/evaluation_latest.json`. Regenerate with
-`uv run --extra data python scripts/train_models.py --season 2022`.
+`uv run --extra data python scripts/train_models.py --season 2022 --season 2023 --season 2024 --season 2025 --season 2026`.
 
-| Metric (calibrated, test set) | `grid` | `elo` | `elo_grid` |
-|---|---|---|---|
-| Winner — Brier | 0.0385 | 0.0472 | **0.0312** |
-| Winner — log loss | 0.143 | 0.141 | 0.293 |
-| Podium — Brier | 0.0797 | 0.1004 | **0.0788** |
-| Podium — log loss | 0.261 | 0.985 | **0.423** |
-| DNF — ECE | 0.052 | 0.125 | 0.125 |
+| Metric (calibrated, test set) | `grid` | `elo_grid` |
+|---|---|---|
+| Winner — Brier | **0.0284** | 0.0290 |
+| Winner — log loss | **0.092** | 0.093 |
+| Winner — ECE (calibration) | 0.019 | 0.022 |
+| Podium — Brier | **0.0595** | 0.0607 |
+| Podium — log loss | 0.316 | **0.276** |
+| Points — Brier | **0.165** | 0.191 |
+| DNF — Brier | 0.249 | **0.237** |
+| DNF — ECE | 0.114 | 0.089 |
 
-> **Caveat (honest):** the test set is only 7 races, so these numbers are noisy — treat them
-> as a working baseline, not a settled result. Longer horizons (more seasons) come next; the
-> harness records whatever is actually measured. `elo`'s edge over `grid` is expected to grow
-> with more training races.
+Naive baseline for reference: `uniform` winner Brier 0.078 (≈ the ~0.05 win base rate after
+calibration drift). Both models roughly **halve** the winner Brier and are **well calibrated**
+(ECE ≈ 0.02).
+
+> **Honest reading:** on a large sample, **starting grid position does most of the predictive
+> work** — `grid` and `elo_grid` are statistically tied on winner/podium, and Elo *form* adds
+> only modest value (it helps points/DNF). This matches F1 reality (pole/front-row wins most
+> races). **DNF prediction is weak** (Brier ≈ 0.24, near the event's own variance) — retirements
+> are close to random at this feature depth. A single-race sanity check (2023 Bahrain, VER
+> favoured mid-race) and a most-recent-3-race spot check (`predict_recent.py`: 1/3 winners, 5/9
+> podium slots) are illustrative, not statistically strong. This is a **calibrated baseline that
+> beats naive models**, not a proven edge over the market.
 
 ## Uncertainty
 Every probability is returned with a lower/upper bound plus `model_version`,

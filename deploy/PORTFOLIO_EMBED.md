@@ -34,14 +34,15 @@ https://<your-deployment>/?embed=true
 > allocation.
 
 ## Resume bullet
-Filled with **measured** values (2022-season evaluation, 5000-path Monte Carlo):
-> Built an event-driven F1 prediction-market research engine across **22 races**, combining
-> historical telemetry, structured upgrade/incident news (Bayesian shrinkage + telemetry
-> confirmation), calibrated Elo/hazard models, and a **5000-path** vectorized Monte Carlo to
-> price winner/podium/head-to-head/DNF contracts (calibrated winner-Brier **0.031** on a
-> held-out test period); shipped a FastAPI + Streamlit dashboard comparing fair value with
-> Kalshi/Polymarket/synthetic order books and generating fractional-Kelly, correlation-aware,
-> risk-constrained **paper** allocations with VaR/expected-shortfall.
+Filled with **measured** values (2022–2026 walk-forward, 102 races, 5000-path Monte Carlo):
+> Built an event-driven F1 prediction-market research engine on **102 real races (2022–2026)**,
+> combining historical telemetry, structured upgrade/incident news (Bayesian shrinkage +
+> telemetry confirmation), calibrated Elo/hazard models, and a **5000-path** vectorized Monte
+> Carlo to price winner/podium/head-to-head/DNF contracts (calibrated winner-Brier **0.028** on
+> a ~31-race held-out test set, ~half the naive baseline, ECE ≈ 0.02); shipped a FastAPI +
+> Streamlit dashboard comparing fair value with Kalshi/Polymarket/synthetic order books and
+> generating fractional-Kelly, correlation-aware, risk-constrained **paper** allocations with
+> VaR/expected-shortfall.
 
 Keep the "paper/research" framing — this is not a live-trading system.
 
