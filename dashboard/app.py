@@ -1,7 +1,7 @@
-"""ApexSignal F1 dashboard — race replay, pricing, opportunities, news, model performance.
+"""ApexSignal F1 dashboard — 9 views: race replay, contract pricing, opportunity scanner,
+simulated allocation, news intelligence, model performance, and architecture.
 
-Runs in fixture mode with zero credentials. Remaining pages (allocation, architecture) land in
-later phases.
+Runs in fixture/synthetic mode with zero credentials; every view degrades gracefully.
 
     uv run --extra dashboard streamlit run dashboard/app.py
 
@@ -52,6 +52,46 @@ def _model_performance() -> None:
         if rows:
             st.markdown(f"**{contract.title()} contract** — Brier / log-loss by model")
             st.dataframe(rows, use_container_width=True, hide_index=True)
+
+
+_ARCHITECTURE_DOT = """
+digraph apexsignal {
+  rankdir=LR; node [shape=box, style=rounded, fontsize=10];
+  data [label="FastF1 / OpenF1\\n(historical, no creds)"];
+  store [label="Append-only\\nevent store"];
+  reducer [label="Race-state\\nreducer (replay)"];
+  models [label="Ratings + hazards\\n+ latent pace"];
+  sim [label="Monte Carlo\\nsimulator"];
+  pricing [label="Contract\\nprices"];
+  news [label="News pipeline\\n(events → priors)"];
+  markets [label="Kalshi / Polymarket /\\nsynthetic books"];
+  opps [label="Opportunity\\nscanner"];
+  alloc [label="Fractional-Kelly\\nallocation"];
+  dash [label="Dashboard / API", shape=box3d];
+  data -> store -> reducer -> models -> sim -> pricing;
+  news -> sim;
+  pricing -> opps; markets -> opps; opps -> alloc;
+  pricing -> dash; opps -> dash; alloc -> dash; news -> dash; reducer -> dash;
+}
+"""
+
+
+def _architecture() -> None:
+    st.subheader("Architecture & methodology")
+    st.graphviz_chart(_ARCHITECTURE_DOT, use_container_width=True)
+    st.markdown(
+        "- **Point-in-time**: every observation carries `first_seen_at`; backtests and news use "
+        "only what was available at the decision moment (leakage tests enforce it).\n"
+        "- **Models**: time-varying Elo + Plackett-Luce (pre-race); tyre/pit/DNF/safety-car "
+        "hazards + latent pace feed a vectorized Monte Carlo (5k paths in ~0.2s).\n"
+        "- **News**: rule-based extraction → Bayesian shrinkage → model parameters; telemetry "
+        "confirms or reverses. Sentiment is a separate track.\n"
+        "- **Markets**: read-only adapters; rule-aware mapping gate; conservative edge after "
+        "fees/slippage; no live-money execution (paper/synthetic/Kalshi-demo only).\n"
+        "- **Allocation**: fractional Kelly (no full Kelly) with correlation-aware caps; "
+        "VaR/expected-shortfall from the payoff paths."
+    )
+    st.markdown(f"<div class='as-muted'>{theme.DISCLAIMER}</div>", unsafe_allow_html=True)
 
 
 def _demo_prices_result() -> object:
@@ -303,6 +343,7 @@ def main() -> None:
         "Simulated allocation": _simulated_allocation,
         "News intelligence": _news_intelligence,
         "Model performance": _model_performance,
+        "Architecture": _architecture,
     }
     choice = "Race replay" if embed else st.sidebar.radio("View", list(views))
     views[choice]()

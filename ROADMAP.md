@@ -10,18 +10,19 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 
 ## Current status
 
-- **Phase:** 6 (Allocation & risk) — **COMPLETE** (bankroll → simulated allocation verified).
+- **Phase:** 7 (Portfolio deployment) — **COMPLETE**. **All 7 phases implemented.**
 - **Last agent:** Claude Code (Opus 4.8), 2026-07-19.
-- **Next action:** start **Phase 7** — portfolio deployment: single-container deploy + public
-  demo mode + health checks + graceful API fallbacks; screenshots + portfolio copy; finalize
-  MODEL_CARD / RISK_DISCLOSURE; run the full demo and record **actual measured** metrics; fill
-  the resume-bullet brackets. Mostly packaging/docs — the nine analytical pages exist.
-- **Deferred (non-blocking):** DuckDB/Parquet backends; LightGBM GBM baseline (D-009); widen
-  Phase 2 evaluation; explicit `DriverRetired` events (D-011); latent-pace particle filter;
+- **Next actions (polish / operator tasks, not blocking):** capture dashboard screenshots
+  (needs a browser — manual, see `deploy/PORTFOLIO_EMBED.md`); verify the Docker build in CI or
+  on a Docker host; deploy to a hosting target and fill the URL placeholder; widen the evaluation
+  to multiple seasons for tighter metrics.
+- **Deferred (non-blocking, tracked as decisions):** DuckDB/Parquet backends; LightGBM GBM
+  baseline (D-009); explicit `DriverRetired` events (D-011); latent-pace particle filter;
   hosted-LLM extractor (D-012); real FIA/RSS/GDELT news adapters; Kalshi WebSocket + demo order
-  signing (D-013); constructor-exposure cap needs a driver→constructor lineup map (driver +
-  cluster caps enforced); full event-driven backtester (`run_backtest.py` still a stub — walk-
-  forward eval covers Phase 2); richer bundled demo race; Docker + dashboard not run in CI.
+  signing (D-013); constructor-exposure cap (needs a driver→constructor lineup map; driver +
+  cluster caps enforced); full event-driven backtester (`run_backtest.py` stub — walk-forward
+  eval covers Phase 2); richer bundled demo race; Docker + Streamlit dashboard not run in CI
+  (API, models, pipelines all are).
 
 ### Verification status (be honest — do not claim unverified work)
 | Capability | Verified how | Status |
@@ -127,9 +128,12 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 ## Phase 7 — Portfolio deployment
 **Deliverable:** *A recruiter opens the hosted dashboard and understands it in two minutes.*
 
-- [ ] Single-container deploy · public demo mode · health checks · graceful API fallbacks
-- [ ] Screenshots · portfolio copy · finalize MODEL_CARD + RISK_DISCLOSURE
-- [ ] Run full demo · record **actual measured** metrics · fill resume bullet brackets
+- [x] FastAPI service (`api/main.py`) — health/version/disclaimer + read-only races/opportunities/allocations; CI-tested via TestClient
+- [x] Single-container `Dockerfile` + `docker-compose` with health checks; public demo mode (fixture, `?embed=true`, graceful fallbacks)
+- [x] Architecture/methodology dashboard page (graphviz diagram) — dashboard now has 9 views
+- [x] Portfolio copy + resume bullet filled with **measured** values (`deploy/PORTFOLIO_EMBED.md`); README "Actual measured results"; MODEL_CARD real metrics + caveats; RISK_DISCLOSURE final
+- [x] Full offline demo runs end-to-end (bootstrap → replay → news → markets → API/allocation)
+- [~] Screenshots (need a browser — manual step, documented) · Docker build verified in CI/host (no local Docker)
 
 ---
 

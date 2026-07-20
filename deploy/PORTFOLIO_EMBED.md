@@ -34,12 +34,16 @@ https://<your-deployment>/?embed=true
 > allocation.
 
 ## Resume bullet
-Fill only with **measured** values after Phase 7 evaluation (brackets are placeholders):
-> Built an event-driven F1 prediction-market engine across [N] races, combining live
-> telemetry, structured upgrade/incident news, calibrated hazard models, and [P]-path Monte
-> Carlo simulation to price winner/podium/H2H/DNF contracts; deployed a dashboard comparing
-> fair value with Kalshi/Polymarket order books and generating risk-constrained paper
-> allocations.
+Filled with **measured** values (2022-season evaluation, 5000-path Monte Carlo):
+> Built an event-driven F1 prediction-market research engine across **22 races**, combining
+> historical telemetry, structured upgrade/incident news (Bayesian shrinkage + telemetry
+> confirmation), calibrated Elo/hazard models, and a **5000-path** vectorized Monte Carlo to
+> price winner/podium/head-to-head/DNF contracts (calibrated winner-Brier **0.031** on a
+> held-out test period); shipped a FastAPI + Streamlit dashboard comparing fair value with
+> Kalshi/Polymarket/synthetic order books and generating fractional-Kelly, correlation-aware,
+> risk-constrained **paper** allocations with VaR/expected-shortfall.
+
+Keep the "paper/research" framing — this is not a live-trading system.
 
 ## Screenshots
 Generated in Phase 7 via `scripts/generate_demo_assets.py`; stored under `dashboard/assets/`.

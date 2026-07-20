@@ -18,21 +18,41 @@ allocation*; the engine is allowed to answer *"No qualifying opportunity."*
 
 ## Status
 
-🚧 **Early build — Phase 0 of 7.** See [`ROADMAP.md`](ROADMAP.md) for exactly what is
-implemented, experimental, planned, and validated. This project follows a strict
-**no-fabricated-results** policy: any metric shown as `Not yet evaluated` has genuinely
-not been measured yet.
+**All 7 phases implemented.** See [`ROADMAP.md`](ROADMAP.md) for exactly what is implemented,
+experimental, and deferred. This project follows a strict **no-fabricated-results** policy: any
+metric shown as `Not yet evaluated` has genuinely not been measured yet; the numbers below were
+measured by the code.
 
-| Category | State |
+| Capability | State |
 |---|---|
-| Repository, tooling, CI, docs | Implemented (Phase 0) |
-| Historical data + deterministic replay | Planned (Phase 1) |
-| Baseline + calibrated probabilities | Planned (Phase 2) |
-| Monte Carlo simulation & contract pricing | Planned (Phase 3) |
-| Structured news intelligence | Planned (Phase 4) |
-| Kalshi / Polymarket integration | Planned (Phase 5) |
-| Allocation & risk | Planned (Phase 6) |
-| Hosted portfolio demo | Planned (Phase 7) |
+| Repository, tooling, CI, docs | ✅ Implemented (Phase 0) |
+| Historical data + deterministic replay | ✅ verified on real 2023 Bahrain GP (Phase 1) |
+| Baseline + calibrated probabilities | ✅ real 2022-season evaluation (Phase 2) |
+| Monte Carlo simulation & contract pricing | ✅ mid-race pricing verified (Phase 3) |
+| Structured news intelligence | ✅ moves a prior + telemetry confirms (Phase 4) |
+| Kalshi / Polymarket / synthetic integration | ✅ read-only + safety guards (Phase 5) |
+| Allocation & risk | ✅ fractional Kelly + VaR/ES (Phase 6) |
+| FastAPI + dashboard + deploy | ✅ 9 views, health checks (Phase 7) |
+
+### Actual measured results
+*(reproduce with the commands noted; nothing here is hard-coded)*
+
+- **Replay** — 2023 Bahrain GP: 1347 events, 0 data-quality errors, replayed podium **VER / PER /
+  ALO** (matches reality). `download_history.py` + `replay_race.py`.
+- **Baseline evaluation** — walk-forward on the 2022 season (22 races, 7-race held-out test):
+  best winner-contract Brier **0.0312** (calibrated, model `elo_grid`). `train_models.py`;
+  report at `artifacts/reports/evaluation_latest.json`.
+- **In-race pricing** — 2023 Bahrain at lap 30: **VER 0.66 / PER 0.20 / LEC 0.09** win; per-driver
+  DNF ≈ the input rate. Monte Carlo runs **5000 paths × 37 laps in ~0.23s**. `price_race.py`.
+- **News → model** — a confirmed aero upgrade moves a driver's win probability **0.26 → 0.33**;
+  telemetry then confirms/reverses the pace prior. `refresh_news.py`.
+- **Model vs. market** — 41 synthetic markets → **9 ranked opportunities** after fees, slippage,
+  and the mapping gate. `refresh_markets.py`.
+- **Allocation** — $10k / moderate → 8 positions, exactly 10% deployed, all caps respected,
+  **VaR95 ~$237 / ES95 ~$280** from the payoff paths. Dashboard "Simulated allocation".
+
+> These are baseline models on a modest evaluation window — a working research system, not a
+> settled result. See `MODEL_CARD.md` for the honest caveats.
 
 ## Why this project exists
 To demonstrate the full research-to-production workflow of a junior quantitative

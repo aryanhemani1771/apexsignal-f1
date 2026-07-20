@@ -102,6 +102,8 @@ sim = [
 [package.dev-dependencies]
 dev = [
     { name = "bandit" },
+    { name = "fastapi" },
+    { name = "httpx" },
     { name = "hypothesis" },
     { name = "mypy" },
     { name = "pip-audit" },
@@ -147,6 +149,8 @@ provides-extras = ["data", "models", "api", "dashboard", "sim"]
 [package.metadata.requires-dev]
 dev = [
     { name = "bandit", specifier = ">=1.7" },
+    { name = "fastapi", specifier = ">=0.111" },
+    { name = "httpx", specifier = ">=0.27" },
     { name = "hypothesis", specifier = ">=6.100" },
     { name = "mypy", specifier = ">=1.10" },
     { name = "pip-audit", specifier = ">=2.7" },

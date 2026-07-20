@@ -63,6 +63,9 @@ dev = [
     "pip-audit>=2.7",
     "types-python-dateutil",
     "types-pyyaml",
+    # Present in dev so the FastAPI service is exercised in CI (also provides httpx TestClient).
+    "fastapi>=0.111",
+    "httpx>=0.27",
 ]
 
 [build-system]

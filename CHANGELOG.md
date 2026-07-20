@@ -5,6 +5,29 @@ Also serves as the agent development log (one entry per phase / work session).
 
 ## [Unreleased]
 
+### Phase 7 — Portfolio deployment — 2026-07-19
+**Objective:** a recruiter opens the dashboard/API and understands the system in two minutes.
+
+Added:
+- `api/main.py` — FastAPI service: `/health`, `/version`, `/disclaimer`, `/races/demo/state`,
+  `/model-performance`, `/opportunities`, `POST /allocations` (read-only; simulated allocations;
+  health reports safe mode + data availability). `fastapi`/`httpx` added to the dev group so the
+  API is CI-tested via `TestClient`.
+- Dashboard "Architecture" view (graphviz pipeline diagram + methodology) — 9 views total.
+- Docker health checks (dashboard `/_stcore/health`, API `/health`).
+- README "Actual measured results"; `deploy/PORTFOLIO_EMBED.md` portfolio copy + resume bullet
+  filled with measured values; MODEL_CARD real metrics; RISK_DISCLOSURE final.
+- API tests (health/version/state/opportunities/allocations/validation).
+
+Verified:
+- `make ci` green — 131 tests pass + 2 gated skips; ruff/mypy(strict)/bandit clean.
+- **Full offline demo runs end-to-end**: bootstrap → replay (AX7 P1) → news timeline → 41
+  markets/9 opportunities → API health `ok` (live_trading False) → 7-position simulated
+  allocation. All 9 dashboard views and the API operate credential-free in fixture mode.
+
+Deferred (documented): dashboard screenshots (need a browser); local Docker build verification;
+multi-season evaluation.
+
 ### Phase 6 — Allocation & risk — 2026-07-19
 **Objective:** a user-entered research amount → transparent simulated allocation, or a no-opportunity result.
 
