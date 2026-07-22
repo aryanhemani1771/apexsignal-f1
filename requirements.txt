@@ -1,8 +1,12 @@
-# Dependency file for hosts that install via pip (e.g. Streamlit Community Cloud), which do
-# not read uv/pyproject directly. Installs the apexsignal package plus the charting deps.
-# Local dev/CI use `uv` — see README.
-#
-# NOTE: set Python 3.12 in the host's advanced settings (the package requires >=3.12).
-.[dashboard]
-# Listed explicitly too: some hosts don't reliably pull optional-dependency extras.
+# Dependencies for pip-based hosts (e.g. Streamlit Community Cloud). We do NOT build the local
+# package here — the dashboard adds src/ to sys.path via dashboard/_bootstrap.py — so only plain
+# third-party packages are listed. Local dev/CI use `uv` + pyproject instead (see README).
+streamlit>=1.36
 plotly>=5.22
+pydantic>=2.7
+pydantic-settings>=2.3
+numpy>=1.26
+polars>=1.0
+pyyaml>=6.0
+python-dateutil>=2.9
+structlog>=24.1

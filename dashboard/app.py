@@ -15,6 +15,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
+import _bootstrap  # noqa: F401  # adds src/ to sys.path — must import before `apexsignal`
 import theme  # local module; `streamlit run dashboard/app.py` puts this dir on sys.path
 from apexsignal.allocation.constraints import RiskTolerance
 from apexsignal.ingestion.fixtures_adapter import demo_news_documents, demo_news_roster
