@@ -14,6 +14,10 @@ It is a research and **paper-trading** platform — not a live-money trading bot
 one-shot winner predictor. Allocations are always labeled *Model-ranked simulated
 allocation*; the engine is allowed to answer *"No qualifying opportunity."*
 
+> ℹ️ *A personal research/learning project, built with AI assistance, to explore end-to-end
+> quantitative-research workflows — point-in-time data engineering, calibrated probabilistic
+> modeling, market microstructure, and risk. Research and paper-trading only; no real money.*
+
 ---
 
 ## Status

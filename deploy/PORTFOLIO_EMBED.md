@@ -4,7 +4,15 @@ How to embed the public ApexSignal F1 demo in a personal portfolio. Placeholders
 once the demo is actually deployed — nothing here claims a live URL yet.
 
 ## Hosted URL
-`https://<your-deployment>/`  *(placeholder — not yet deployed)*
+`https://<your-app>.streamlit.app/`  *(placeholder — fill after deploying)*
+
+## Deploy the live dashboard (Streamlit Community Cloud — free)
+1. Push this repo to GitHub (done).
+2. Go to **share.streamlit.io** → sign in with GitHub → **New app**.
+3. Repo: `aryanhemani1771/apexsignal-f1` · Branch: `main` · **Main file: `dashboard/app.py`**.
+4. **Advanced settings → Python version: 3.12** (the package requires ≥3.12).
+5. Deploy. The host installs from `requirements.txt` (`.[dashboard]`) and serves a public URL.
+It runs in fixture/synthetic mode — no credentials, no live data, no money.
 
 ## Embed mode
 The dashboard supports an embed view that hides navigation chrome:
