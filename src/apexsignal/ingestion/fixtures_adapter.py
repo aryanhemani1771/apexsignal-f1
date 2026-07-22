@@ -18,6 +18,11 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 _FIXTURES_DIR = _REPO_ROOT / "data" / "fixtures"
 DEMO_RACE_PATH = _FIXTURES_DIR / "demo_race" / "events.json"
 DEMO_NEWS_PATH = _FIXTURES_DIR / "news" / "documents.json"
+# A bundled REAL race: the 2023 Bahrain GP, normalized from FastF1 timing data (factual
+# historical data). Real driver codes and real events (laps, safety car, pit stops).
+REAL_RACE_PATH = _FIXTURES_DIR / "real_race" / "events.jsonl"
+REAL_RACE_NAME = "2023 Bahrain Grand Prix"
+REAL_RACE_TOTAL_LAPS = 57
 
 
 def load_events_json(path: str | Path) -> list[DomainEvent]:
@@ -29,6 +34,13 @@ def load_events_json(path: str | Path) -> list[DomainEvent]:
 def demo_race_events() -> list[DomainEvent]:
     """The bundled synthetic 'Demo Grand Prix' event log."""
     return load_events_json(DEMO_RACE_PATH)
+
+
+def real_race_events() -> list[DomainEvent]:
+    """The bundled REAL 2023 Bahrain GP event log (real drivers and events)."""
+    from apexsignal.storage.event_store import AppendOnlyEventStore
+
+    return AppendOnlyEventStore.from_jsonl(REAL_RACE_PATH).events()
 
 
 def demo_news_documents(path: str | Path | None = None) -> list[NewsDocument]:

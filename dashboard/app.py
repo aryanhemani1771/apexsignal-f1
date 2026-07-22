@@ -1,15 +1,16 @@
 """ApexSignal F1 dashboard — an interactive, plain-English research demo.
 
 Designed so someone with no finance background can follow it: every page opens with a plain
-explanation, uses charts instead of bare tables, and adds tooltips for any jargon. Runs in
-fixture/synthetic mode with zero credentials. Market prices shown are synthetic/illustrative;
-the platform's adapters read public Kalshi / read-only Polymarket data (see the footnotes).
+explanation, uses charts instead of bare tables, and adds tooltips for any jargon. Runs on a
+bundled REAL race (2023 Bahrain GP, from FastF1 timing data) with real drivers and events, with
+zero credentials. Market prices are synthetic/illustrative (see the footnotes); news items are
+clearly-labelled hypothetical examples.
 """
 
 from __future__ import annotations
 
 import asyncio
-from datetime import timedelta
+from datetime import UTC, datetime
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -18,19 +19,28 @@ import streamlit as st
 import _bootstrap  # noqa: F401  # adds src/ to sys.path — must import before `apexsignal`
 import theme  # local module; `streamlit run dashboard/app.py` puts this dir on sys.path
 from apexsignal.allocation.constraints import RiskTolerance
-from apexsignal.ingestion.fixtures_adapter import demo_news_documents, demo_news_roster
+from apexsignal.domain.events import EventType
+from apexsignal.domain.news import NewsDocument, SourceClass
+from apexsignal.domain.race_state import RaceState, replay, replay_states
+from apexsignal.ingestion.fixtures_adapter import (
+    REAL_RACE_NAME,
+    REAL_RACE_TOTAL_LAPS,
+    real_race_events,
+)
 from apexsignal.ingestion.synthetic_market import SyntheticMarketAdapter, SyntheticMarketConfig
 from apexsignal.intelligence.entity_resolution import EntityResolver
 from apexsignal.intelligence.event_extractor import RuleBasedExtractor
 from apexsignal.services import evaluation_report, news_service, race_service
 from apexsignal.services.opportunity_service import scan_opportunities
 from apexsignal.services.portfolio_service import build_allocation
-from apexsignal.simulation.engine import RaceSimulator, SimConfig, SimInput
+from apexsignal.services.pricing_service import build_sim_input
+from apexsignal.simulation.engine import RaceSimulator, SimConfig, SimulationResult
 from apexsignal.simulation.payoff_matrix import ContractPrices, price_contracts
 
 ACCENT = theme.ACCENT
 POS = "#3dd6c4"
 NEG = "#ff6b6b"
+PRICE_AT_LAP = 30  # price the race from this point onward
 
 _CSS = """
 <style>
@@ -65,7 +75,7 @@ def _style(fig: go.Figure) -> go.Figure:
         plot_bgcolor="rgba(0,0,0,0)",
         font_color=theme.TEXT,
         margin={"l": 8, "r": 8, "t": 30, "b": 8},
-        height=360,
+        height=380,
         showlegend=True,
         legend={"orientation": "h", "y": 1.12, "x": 0},
     )
@@ -74,22 +84,40 @@ def _style(fig: go.Figure) -> go.Figure:
     return fig
 
 
+# ------------------------------------------------------------------ real-race data (cached)
+
+
 @st.cache_data(show_spinner=False)
-def _demo_prices() -> ContractPrices:
-    d = 10
-    sim = SimInput(
-        driver_ids=[f"Car {i + 1}" for i in range(d)],
-        total_laps=40,
-        current_lap=15,
-        clean_air_pace=[90.0 + i * 0.18 for i in range(d)],
-        tyre_compound=["medium"] * d,
-        tyre_age=[10] * d,
-        pit_count=[0] * d,
-        gap_to_leader=[i * 1.5 for i in range(d)],
-        retired=[False] * d,
-        race_dnf_prob=[0.09] * d,
+def _events() -> list:
+    return real_race_events()
+
+
+@st.cache_data(show_spinner=False)
+def _lap_states() -> list[tuple[int, RaceState]]:
+    """One race-state snapshot per completed lap (real leaderboard through the race)."""
+    by_lap: dict[int, RaceState] = {}
+    for s in replay_states(_events()):
+        if s.current_lap > 0:
+            by_lap[s.current_lap] = s
+    return [(lap, by_lap[lap]) for lap in sorted(by_lap)]
+
+
+@st.cache_data(show_spinner=False)
+def _sim(at_lap: int = PRICE_AT_LAP) -> SimulationResult:
+    """Simulate the rest of the real race from ``at_lap`` (real drivers)."""
+    events = _events()
+    cutoff = max(
+        e.event_time
+        for e in events
+        if e.event_type is EventType.LAP_COMPLETED and int(e.payload.get("lap", 0)) <= at_lap
     )
-    return price_contracts(RaceSimulator(SimConfig(n_paths=4000, seed=1)).simulate(sim))
+    subset = [e for e in events if e.event_time <= cutoff]
+    sim_input = build_sim_input(replay(subset), subset, total_laps=REAL_RACE_TOTAL_LAPS)
+    return RaceSimulator(SimConfig(n_paths=3000, seed=1)).simulate(sim_input)
+
+
+def _prices() -> ContractPrices:
+    return price_contracts(_sim())
 
 
 def _embed_mode() -> bool:
@@ -111,6 +139,7 @@ def _overview() -> None:
         "<b>betting-market prices</b>, and simulates <b>smart, risk-controlled bets</b> — with "
         "<b>pretend money only</b>. It's a research/learning project, built with AI assistance."
     )
+    st.caption(f"Live demo uses real timing data from the **{REAL_RACE_NAME}**.")
 
     report = evaluation_report.load_latest_report()
     races = report.get("n_races") if report else None
@@ -124,39 +153,35 @@ def _overview() -> None:
     c1, c2, c3, c4 = st.columns(4)
     c1.metric(
         "Real races analysed",
-        races or "—",
+        races or "-",
         help="Actual F1 races (2022-2026) used to test how accurate the model is.",
     )
     c2.metric(
         "Winner accuracy",
-        f"{brier:.3f}" if brier else "—",
-        help="Brier score — lower is better. ~0.03 means the model's win probabilities line up "
-        "well with what really happened. Random guessing scores ~0.08.",
+        f"{brier:.3f}" if brier else "-",
+        help="Brier score - lower is better. ~0.03 means the model's win probabilities "
+        "line up well with what really happened. Random guessing scores ~0.08.",
     )
     c3.metric(
         "Simulation speed",
         "5,000 in ~0.2s",
-        help="Each prediction runs 5,000 simulated race endings to estimate probabilities.",
+        help="Each prediction runs thousands of simulated race endings.",
     )
-    c4.metric(
-        "Money at risk",
-        "$0",
-        help="No real trading — ever. Everything here is paper/simulated.",
-    )
+    c4.metric("Money at risk", "$0", help="No real trading - ever. Paper/simulated only.")
 
     st.markdown("#### What each tab shows")
     st.markdown(
-        "- **🏎️ Race replay** — a race played back moment-by-moment (leaderboard, tyres, pits).\n"
-        "- **📊 Win probabilities** — the model's estimated chance of each result.\n"
-        "- **🎯 Value finder** — where the model disagrees with the market price (an edge).\n"
-        "- **💰 Bet sizing** — type a pretend budget → a disciplined, risk-capped allocation.\n"
-        "- **📰 News impact** — how an F1 news event nudges the predictions.\n"
-        "- **✅ Accuracy (real data)** — how well the model actually did on real races.\n"
-        "- **🧭 How it works** — the architecture diagram."
+        "- **🏎️ Race replay** - the real race played back lap-by-lap (leaderboard, tyres, pits).\n"
+        "- **📊 Win probabilities** - the model's estimated chance of each result.\n"
+        "- **🎯 Value finder** - where the model disagrees with the market price (an edge).\n"
+        "- **💰 Bet sizing** - type a pretend budget → a disciplined, risk-capped allocation.\n"
+        "- **📰 News impact** - how an F1 news event would nudge the predictions.\n"
+        "- **✅ Accuracy (real data)** - how well the model actually did on real races.\n"
+        "- **🧭 How it works** - the architecture diagram."
     )
     st.info(
-        "Most tabs run on **demo data** so the app works with no accounts or passwords. "
-        "The **Accuracy (real data)** tab shows genuine measured results on ~100 real F1 races."
+        "Race data is **real** (2023 Bahrain GP). Market prices are **synthetic** and news items "
+        "are **hypothetical examples** - both clearly labelled - so the demo needs no accounts."
     )
 
 
@@ -166,36 +191,26 @@ def _overview() -> None:
 def _race_replay() -> None:
     st.subheader("🏎️ Race replay")
     _intro(
-        "Watch a race rebuilt from its events. Drag the slider to move through time — the "
-        "<b>leaderboard</b> (positions, tyres, pit stops) updates just like live timing. "
-        "<i>(This is a short, invented demo race.)</i>"
+        f"The <b>{REAL_RACE_NAME}</b>, rebuilt from real FastF1 timing data. Drag the slider to "
+        "move through the laps - the <b>leaderboard</b> (positions, tyres, pit stops) updates "
+        "just like live timing. Drivers are the real three-letter codes (VER = Verstappen…)."
     )
-    events = race_service.load_events()
-    history = race_service.replay_history(events)
-    quality = race_service.quality_report(events)
-    if not history:
-        st.warning("No events to replay.")
+    lap_states = _lap_states()
+    if not lap_states:
+        st.warning("No race data.")
         return
+    max_lap = lap_states[-1][0]
+    lap = st.slider("Lap", 1, max_lap, min(PRICE_AT_LAP, max_lap))
+    state = next((s for lp, s in lap_states if lp >= lap), lap_states[-1][1])
 
-    idx = st.slider("Move through the race →", 1, len(history), len(history))
-    state = history[idx - 1]
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Lap", state.current_lap)
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Lap", f"{state.current_lap} / {REAL_RACE_TOTAL_LAPS}")
     c2.metric(
         "Track status",
         state.track_status.replace("_", " ").title(),
         help="Green = racing; Safety car = neutralised; Yellow/Red = caution/stopped.",
     )
-    c3.metric(
-        "Events processed",
-        state.events_applied,
-        help="How many timing events have been folded into this snapshot.",
-    )
-    c4.metric(
-        "Data quality",
-        "OK" if quality.ok else f"{quality.n_errors} issues",
-        help="Automated integrity checks (duplicate laps, impossible ordering, etc.).",
-    )
+    c3.metric("Cars running", sum(1 for d in state.drivers.values() if not d.retired))
 
     st.markdown("**Leaderboard**")
     st.dataframe(race_service.timing_rows(state), use_container_width=True, hide_index=True)
@@ -209,11 +224,11 @@ def _race_replay() -> None:
 def _pricing() -> None:
     st.subheader("📊 Win probabilities")
     _intro(
-        "The model runs thousands of simulated race endings and counts how often each car "
-        "achieves a result. So <b>32%</b> for 'podium' means: in ~32% of simulated races, that "
-        "car finished top-3. These are the core numbers everything else is built on."
+        f"From lap {PRICE_AT_LAP} of the {REAL_RACE_NAME}, the model runs thousands of simulated "
+        "race endings and counts how often each driver achieves a result. So <b>32% podium</b> "
+        "means: in ~32% of simulated races, that driver finished top-3."
     )
-    prices = _demo_prices()
+    prices = _prices()
     top = sorted(prices.drivers.values(), key=lambda p: -p.win)[:6]
     xs, ys, cs = [], [], []
     for p in top:
@@ -235,7 +250,6 @@ def _pricing() -> None:
         f"{prices.safety_car:.0%}",
         help="Probability a safety car appears before the race ends.",
     )
-    st.caption("Cars are labelled generically for the demo. On a real race these are drivers.")
 
 
 # ------------------------------------------------------------------ Value finder
@@ -245,10 +259,10 @@ def _opportunities() -> None:
     st.subheader("🎯 Value finder (model vs. market)")
     _intro(
         "A betting market puts a <b>price</b> on each outcome (a price of 60¢ ≈ a 60% chance). "
-        "If the model thinks something is <b>more likely</b> than the price implies — after fees — "
-        "that gap is a potential <b>edge</b>. This tab ranks those gaps."
+        "If the model thinks something is <b>more likely</b> than the price implies - after fees - "
+        "that gap is a potential <b>edge</b>. This ranks those gaps for the real race."
     )
-    prices = _demo_prices()
+    prices = _prices()
     min_edge = st.slider("Minimum edge to show (percentage points)", 0, 20, 3) / 100
     adapter = SyntheticMarketAdapter(
         prices, config=SyntheticMarketConfig(mispricing_sd=0.08, seed=7)
@@ -257,8 +271,8 @@ def _opportunities() -> None:
 
     if not scan.opportunities:
         st.warning(
-            "**No value found** at this threshold — exactly what should happen when the "
-            "market is priced efficiently. Lower the slider to see more."
+            "**No value found** at this threshold - what should happen when the market is "
+            "priced efficiently. Lower the slider to see more."
         )
         _market_footnote()
         return
@@ -275,7 +289,6 @@ def _opportunities() -> None:
     )
     fig.update_yaxes(autorange="reversed")
     st.plotly_chart(_style(fig), use_container_width=True)
-
     with st.expander("See the numbers"):
         st.dataframe(
             [
@@ -323,19 +336,17 @@ def _allocation() -> None:
         / 100
     )
 
-    result = RaceSimulator(SimConfig(n_paths=3000, seed=1)).simulate(_demo_sim())
     alloc = asyncio.run(
         build_allocation(
-            result,
+            _sim(),
             bankroll=bankroll,
             tolerance=RiskTolerance(tol),
             max_deployment_override=max_deploy,
         )
     )
-
     if not alloc.positions:
         st.warning(
-            "**No qualifying bets** — the edges don't clear the safety thresholds. "
+            "**No qualifying bets** - the edges don't clear the safety thresholds. "
             "That's a valid, honest answer (no bet is a bet)."
         )
         _market_footnote()
@@ -373,12 +384,12 @@ def _allocation() -> None:
     m3.metric(
         "Worst realistic loss",
         f"${alloc.risk.var_95:,.0f}",
-        help="'Value at Risk' — a loss this big or worse happens ~5% of the time.",
+        help="'Value at Risk' - a loss this big or worse happens ~5% of the time.",
     )
     m4.metric(
         "Avg. bad-day loss",
         f"${alloc.risk.expected_shortfall_95:,.0f}",
-        help="'Expected shortfall' — the average loss on those worst 5% of days.",
+        help="'Expected shortfall' - the average loss on those worst 5% of days.",
     )
     _market_footnote()
 
@@ -386,18 +397,66 @@ def _allocation() -> None:
 # ------------------------------------------------------------------ News impact
 
 
+def _illustrative_news() -> list[NewsDocument]:
+    t = datetime(2023, 3, 3, 9, 0, tzinfo=UTC)
+    seen = datetime(2023, 3, 3, 9, 30, tzinfo=UTC)
+
+    def doc(title: str, text: str, src: SourceClass) -> NewsDocument:
+        return NewsDocument(
+            title=title,
+            text=text,
+            source_url="https://example.org/x",
+            source_class=src,
+            published_at=t,
+            first_seen_at=seen,
+            meeting_id="demo",
+        )
+
+    return [
+        doc(
+            "Example: Leclerc takes a grid penalty for a new power unit",
+            "Hypothetical illustration - the stewards ruled Leclerc will start with a grid "
+            "penalty after a new power unit. It is official.",
+            SourceClass.FIA_DOCUMENT,
+        ),
+        doc(
+            "Example: Mercedes brings a floor upgrade for Hamilton",
+            "Hypothetical illustration - Mercedes has confirmed an aerodynamic floor upgrade "
+            "for Hamilton. It is official.",
+            SourceClass.OFFICIAL_TEAM,
+        ),
+        doc(
+            "Example: reliability concern flagged for Sainz",
+            "Hypothetical illustration - a specialist report notes a reliability concern on the "
+            "Sainz power unit after Friday running.",
+            SourceClass.SPECIALIST_PUB,
+        ),
+        doc(
+            "Example: rain is expected on Sunday",
+            "Hypothetical illustration - forecasters say rain is expected, raising the chance of "
+            "a wet race.",
+            SourceClass.GENERAL_PUB,
+        ),
+    ]
+
+
 def _news() -> None:
     st.subheader("📰 News impact")
+    st.warning(
+        "⚠️ **Illustrative hypothetical examples** (not real news about these drivers) - "
+        "they show how the pipeline turns a headline into a change in the model."
+    )
     _intro(
         "The system reads F1 news, pulls out <b>structured facts</b> (a grid penalty, a car "
-        "upgrade, a reliability worry) and shows how each one <b>nudges the model</b>. Opinion and "
-        "hype are kept on a separate 'sentiment' track. <i>(Demo uses invented articles.)</i>"
+        "upgrade, a reliability worry) and shows how each <b>nudges the model</b>. Opinion/hype "
+        "is kept on a separate 'sentiment' track."
     )
-    docs = demo_news_documents()
-    extractor = RuleBasedExtractor(resolver=EntityResolver(demo_news_roster()))
-    as_of = max(d.first_seen_at for d in docs) + timedelta(hours=1)
-    result = news_service.run_pipeline(docs, extractor=extractor, as_of=as_of)
-
+    docs = _illustrative_news()
+    result = news_service.run_pipeline(
+        docs,
+        extractor=RuleBasedExtractor(resolver=EntityResolver()),
+        as_of=datetime(2023, 3, 4, tzinfo=UTC),
+    )
     st.markdown("**What the system understood from the news**")
     st.dataframe(
         [
@@ -411,9 +470,8 @@ def _news() -> None:
         use_container_width=True,
         hide_index=True,
     )
-
     if result.impacts:
-        st.markdown("**How it changed each car's predicted pace** (negative = faster)")
+        st.markdown("**How it would change each driver's predicted pace** (negative = faster)")
         ids = list(result.impacts)
         deltas = [result.impacts[d].pace_delta_seconds_per_lap for d in ids]
         fig = px.bar(
@@ -425,29 +483,21 @@ def _news() -> None:
         )
         st.plotly_chart(_style(fig), use_container_width=True)
 
-    moods = [(t, s) for t, s in result.sentiment.items() if s.label != "neutral"]
-    if moods:
-        st.caption(
-            "Separate 'mood' track (not used for predictions): "
-            + " · ".join(f"{'🟢' if s.label == 'positive' else '🔴'} {t}" for t, s in moods)
-        )
-
 
 # ------------------------------------------------------------------ Accuracy (real data)
 
 
 def _performance() -> None:
-    st.subheader("✅ Accuracy — on real races")
+    st.subheader("✅ Accuracy - on real races")
     _intro(
         "This is the <b>honest</b> tab: how well did the model do on <b>real</b> F1 races? "
-        "We use the <b>Brier score</b> — think of it as prediction error, where <b>lower is "
+        "We use the <b>Brier score</b> - think of it as prediction error, where <b>lower is "
         "better</b>. A model that beats plain guessing has found real signal."
     )
     report = evaluation_report.load_latest_report()
     if report is None:
         st.info("Not yet evaluated. Run `scripts/train_models.py` to generate real metrics.")
         return
-
     st.caption(
         f"Tested on **{report.get('n_races')} real races** "
         f"(seasons {report.get('seasons')}), walk-forward, calibrated."
@@ -473,14 +523,14 @@ def _performance() -> None:
         st.plotly_chart(_style(fig), use_container_width=True)
         best = min(rows, key=lambda r: r["brier_cal"])
         st.success(
-            f"Best model scores **{best['brier_cal']:.3f}** on winning — about **half** the error "
+            f"Best model scores **{best['brier_cal']:.3f}** on winning - about **half** the error "
             "of random guessing, and well-calibrated. Honest finding: starting **grid position** "
             "explains most of it (pole usually wins), so the model's edge is real but modest."
         )
     for contract in ("podium", "points", "dnf"):
         r = evaluation_report.contract_summary(report, contract)
         if r:
-            with st.expander(f"{contract.title()} contract — details"):
+            with st.expander(f"{contract.title()} contract - details"):
                 st.dataframe(r, use_container_width=True, hide_index=True)
 
 
@@ -519,26 +569,10 @@ def _architecture() -> None:
     )
     st.graphviz_chart(_ARCHITECTURE_DOT, use_container_width=True)
     st.markdown(
-        "- **No data leakage** — every fact is time-stamped; predictions only use what was known "
+        "- **No data leakage** - every fact is time-stamped; predictions only use what was known "
         "at the moment (enforced by tests).\n"
-        "- **Calibrated** — probabilities are checked against real outcomes.\n"
-        "- **Safe by design** — read-only market data, no real-money trading, paper bets only."
-    )
-
-
-def _demo_sim() -> SimInput:
-    d = 10
-    return SimInput(
-        driver_ids=[f"Car {i + 1}" for i in range(d)],
-        total_laps=40,
-        current_lap=15,
-        clean_air_pace=[90.0 + i * 0.18 for i in range(d)],
-        tyre_compound=["medium"] * d,
-        tyre_age=[10] * d,
-        pit_count=[0] * d,
-        gap_to_leader=[i * 1.5 for i in range(d)],
-        retired=[False] * d,
-        race_dnf_prob=[0.09] * d,
+        "- **Calibrated** - probabilities are checked against real outcomes.\n"
+        "- **Safe by design** - read-only market data, no real-money trading, paper bets only."
     )
 
 
@@ -558,7 +592,6 @@ def main() -> None:
     st.set_page_config(page_title="ApexSignal F1", page_icon="🏁", layout="wide")
     st.markdown(_CSS, unsafe_allow_html=True)
     embed = _embed_mode()
-
     if embed:
         _overview()
     else:
@@ -568,7 +601,6 @@ def main() -> None:
         st.sidebar.markdown("---")
         st.sidebar.caption("Research/learning demo. Not financial advice. No real money.")
         VIEWS[choice]()
-
     st.markdown(f"<div class='as-fn'>{theme.DISCLAIMER}</div>", unsafe_allow_html=True)
 
 

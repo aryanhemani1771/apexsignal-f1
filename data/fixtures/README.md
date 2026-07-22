@@ -9,5 +9,8 @@ placeholders so the fixtures carry no third-party data or licensing concerns.
   path with normalized FastF1 data; this synthetic bundle keeps the fixture demo running
   with zero credentials in the meantime.
 
-Real historical race bundles land in Phase 1 (see `ROADMAP.md`) and will be sourced via
-FastF1 with full provenance timestamps.
+- `real_race/events.jsonl` — a **real** race: the **2023 Bahrain Grand Prix**, normalized from
+  FastF1 timing data (factual historical F1 data). Real driver codes (VER, PER, HAM, …) and real
+  events (laps, positions, safety car, pit stops). Used by the dashboard so the demo shows real
+  drivers and a real race rather than synthetic placeholders. Sourced via FastF1 (MIT); this is
+  public factual timing data used for research/education.
