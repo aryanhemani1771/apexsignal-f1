@@ -5,8 +5,7 @@
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 ![Execution: paper/demo only](https://img.shields.io/badge/execution-paper%20%2F%20demo%20only-orange)
 
-<!-- 🔴 LIVE DEMO: paste your Streamlit URL here after deploying, e.g. -->
-<!-- **▶️ Live dashboard:** https://apexsignal-f1.streamlit.app -->
+**▶️ Live dashboard:** https://apexsignal-f1-j7chywmbhc2bk8jqf2hktf.streamlit.app
 
 **ApexSignal F1 is an event-driven Formula 1 prediction-market research platform that
 combines historical telemetry, live race state, structured technical and incident news,

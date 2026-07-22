@@ -4,7 +4,7 @@ How to embed the public ApexSignal F1 demo in a personal portfolio. Placeholders
 once the demo is actually deployed — nothing here claims a live URL yet.
 
 ## Hosted URL
-`https://<your-app>.streamlit.app/`  *(placeholder — fill after deploying)*
+**Live:** https://apexsignal-f1-j7chywmbhc2bk8jqf2hktf.streamlit.app
 
 ## Deploy the live dashboard (Streamlit Community Cloud — free)
 1. Push this repo to GitHub (done).
