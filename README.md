@@ -1,5 +1,13 @@
 # ApexSignal F1
 
+[![CI](https://github.com/aryanhemani1771/apexsignal-f1/actions/workflows/ci.yml/badge.svg)](https://github.com/aryanhemani1771/apexsignal-f1/actions/workflows/ci.yml)
+![Python 3.12](https://img.shields.io/badge/python-3.12-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![Execution: paper/demo only](https://img.shields.io/badge/execution-paper%20%2F%20demo%20only-orange)
+
+<!-- 🔴 LIVE DEMO: paste your Streamlit URL here after deploying, e.g. -->
+<!-- **▶️ Live dashboard:** https://apexsignal-f1.streamlit.app -->
+
 **ApexSignal F1 is an event-driven Formula 1 prediction-market research platform that
 combines historical telemetry, live race state, structured technical and incident news,
 calibrated Monte Carlo simulation, public exchange prices, and correlation-aware paper
