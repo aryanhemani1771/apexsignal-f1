@@ -1,6 +1,8 @@
 # Dependency file for hosts that install via pip (e.g. Streamlit Community Cloud), which do
-# not read uv/pyproject directly. Installs the apexsignal package plus the dashboard extras
-# (streamlit, plotly) and all core deps. Local dev/CI use `uv` — see README.
+# not read uv/pyproject directly. Installs the apexsignal package plus the charting deps.
+# Local dev/CI use `uv` — see README.
 #
 # NOTE: set Python 3.12 in the host's advanced settings (the package requires >=3.12).
 .[dashboard]
+# Listed explicitly too: some hosts don't reliably pull optional-dependency extras.
+plotly>=5.22
