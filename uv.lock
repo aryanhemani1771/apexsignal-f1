@@ -60,6 +60,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "numpy" },
+    { name = "plotly" },
     { name = "polars" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
@@ -126,6 +127,7 @@ requires-dist = [
     { name = "numba", marker = "extra == 'sim'", specifier = ">=0.60" },
     { name = "numpy", specifier = ">=1.26" },
     { name = "pandas", marker = "extra == 'data'", specifier = ">=2.2" },
+    { name = "plotly", specifier = ">=5.22" },
     { name = "plotly", marker = "extra == 'dashboard'", specifier = ">=5.22" },
     { name = "polars", specifier = ">=1.0" },
     { name = "pyarrow", marker = "extra == 'data'", specifier = ">=16.0" },

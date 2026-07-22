@@ -18,6 +18,11 @@ dependencies = [
     "numpy>=1.26",
     "python-dateutil>=2.9",
     "pyyaml>=6.0",
+    # plotly powers the hosted dashboard's charts. It lives in core (not just the optional
+    # `dashboard` extra) because Streamlit Community Cloud installs from pyproject and does NOT
+    # pull optional-dependency extras — so plotly must be a core dep to reach the deployed app.
+    # (streamlit itself is provided by the Streamlit Cloud platform, so it stays in the extra.)
+    "plotly>=5.22",
 ]
 
 [project.optional-dependencies]
