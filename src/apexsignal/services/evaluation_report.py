@@ -12,11 +12,20 @@ from typing import Any, cast
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_REPORT = _REPO_ROOT / "artifacts" / "reports" / "evaluation_latest.json"
+NEXT_RACE_REPORT = _REPO_ROOT / "artifacts" / "reports" / "next_race_prediction.json"
 
 
 def load_latest_report(path: str | Path | None = None) -> dict[str, Any] | None:
     """Return the parsed report, or None if it has not been generated yet."""
     p = Path(path) if path else DEFAULT_REPORT
+    if not p.exists():
+        return None
+    return cast(dict[str, Any], json.loads(p.read_text(encoding="utf-8")))
+
+
+def load_next_race_prediction(path: str | Path | None = None) -> dict[str, Any] | None:
+    """Return the bundled next-race forecast (from ``scripts/predict_next.py``), or None."""
+    p = Path(path) if path else NEXT_RACE_REPORT
     if not p.exists():
         return None
     return cast(dict[str, Any], json.loads(p.read_text(encoding="utf-8")))

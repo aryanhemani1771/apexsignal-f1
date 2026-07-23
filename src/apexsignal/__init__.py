@@ -8,5 +8,5 @@ __version__ = "0.1.0"
 
 DISCLAIMER = (
     "ApexSignal F1 is an independent research project and is not affiliated with "
-    "Formula 1, the FIA, any constructor, Kalshi, Polymarket, or Akuna Capital."
+    "Formula 1, the FIA, any constructor, Kalshi, or Polymarket."
 )

@@ -1,0 +1,163 @@
+{
+  "race": "2026 Hungarian Grand Prix",
+  "date": "2026-07-26",
+  "generated_at": "2026-07-22T03:24:40.134984+00:00",
+  "trained_on_races": 99,
+  "method": "form-based (Elo ratings + Plackett-Luce); pre-qualifying, no grid",
+  "drivers": [
+    {
+      "driver": "NOR",
+      "constructor": "mclaren",
+      "win": 0.1226,
+      "podium": 0.3543,
+      "points": 0.8166
+    },
+    {
+      "driver": "VER",
+      "constructor": "red_bull_racing",
+      "win": 0.1177,
+      "podium": 0.3321,
+      "points": 0.7964
+    },
+    {
+      "driver": "RUS",
+      "constructor": "mercedes",
+      "win": 0.1144,
+      "podium": 0.3289,
+      "points": 0.8363
+    },
+    {
+      "driver": "LEC",
+      "constructor": "ferrari",
+      "win": 0.1085,
+      "podium": 0.3302,
+      "points": 0.8015
+    },
+    {
+      "driver": "PIA",
+      "constructor": "mclaren",
+      "win": 0.1026,
+      "podium": 0.312,
+      "points": 0.7933
+    },
+    {
+      "driver": "ANT",
+      "constructor": "mercedes",
+      "win": 0.0897,
+      "podium": 0.2699,
+      "points": 0.7979
+    },
+    {
+      "driver": "HAM",
+      "constructor": "ferrari",
+      "win": 0.0889,
+      "podium": 0.2612,
+      "points": 0.7612
+    },
+    {
+      "driver": "HAD",
+      "constructor": "red_bull_racing",
+      "win": 0.0349,
+      "podium": 0.1041,
+      "points": 0.5196
+    },
+    {
+      "driver": "BEA",
+      "constructor": "haas_f1_team",
+      "win": 0.0241,
+      "podium": 0.082,
+      "points": 0.3764
+    },
+    {
+      "driver": "ALO",
+      "constructor": "aston_martin",
+      "win": 0.0221,
+      "podium": 0.0659,
+      "points": 0.3498
+    },
+    {
+      "driver": "LAW",
+      "constructor": "racing_bulls",
+      "win": 0.0199,
+      "podium": 0.0646,
+      "points": 0.3376
+    },
+    {
+      "driver": "SAI",
+      "constructor": "williams",
+      "win": 0.0171,
+      "podium": 0.0563,
+      "points": 0.291
+    },
+    {
+      "driver": "LIN",
+      "constructor": "racing_bulls",
+      "win": 0.0169,
+      "podium": 0.0561,
+      "points": 0.3106
+    },
+    {
+      "driver": "HUL",
+      "constructor": "audi",
+      "win": 0.0169,
+      "podium": 0.0499,
+      "points": 0.2849
+    },
+    {
+      "driver": "GAS",
+      "constructor": "alpine",
+      "win": 0.0165,
+      "podium": 0.0454,
+      "points": 0.2619
+    },
+    {
+      "driver": "PER",
+      "constructor": "cadillac",
+      "win": 0.0161,
+      "podium": 0.0486,
+      "points": 0.2562
+    },
+    {
+      "driver": "ALB",
+      "constructor": "williams",
+      "win": 0.0154,
+      "podium": 0.053,
+      "points": 0.2873
+    },
+    {
+      "driver": "BOR",
+      "constructor": "audi",
+      "win": 0.015,
+      "podium": 0.0474,
+      "points": 0.2547
+    },
+    {
+      "driver": "OCO",
+      "constructor": "haas_f1_team",
+      "win": 0.013,
+      "podium": 0.0425,
+      "points": 0.2557
+    },
+    {
+      "driver": "BOT",
+      "constructor": "cadillac",
+      "win": 0.0099,
+      "podium": 0.0299,
+      "points": 0.1908
+    },
+    {
+      "driver": "STR",
+      "constructor": "aston_martin",
+      "win": 0.0097,
+      "podium": 0.0345,
+      "points": 0.2176
+    },
+    {
+      "driver": "COL",
+      "constructor": "alpine",
+      "win": 0.008,
+      "podium": 0.0312,
+      "points": 0.1965
+    }
+  ]
+}

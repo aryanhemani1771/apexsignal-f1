@@ -2,9 +2,9 @@
 
 Designed so someone with no finance background can follow it: every page opens with a plain
 explanation, uses charts instead of bare tables, and adds tooltips for any jargon. Runs on a
-bundled REAL race (2023 Bahrain GP, from FastF1 timing data) with real drivers and events, with
-zero credentials. Market prices are synthetic/illustrative (see the footnotes); news items are
-clearly-labelled hypothetical examples.
+bundled REAL race (2026 British GP, from FastF1 timing data) with real drivers and events, plus a
+form-based forecast for the next race — all with zero credentials. Market prices are
+synthetic/illustrative (see the footnotes); news items are clearly-labelled hypothetical examples.
 """
 
 from __future__ import annotations
@@ -63,7 +63,7 @@ def _market_footnote() -> None:
         "<div class='as-fn'>ⓘ Market prices here are <b>synthetic / illustrative</b> (generated "
         "to show the workflow). The platform includes read-only adapters for <b>Kalshi</b> "
         "(public data &amp; demo) and <b>Polymarket</b>; real public prices can be plugged in. "
-        "Independent project — not affiliated with Kalshi, Polymarket, or Akuna Capital. "
+        "Independent project — not affiliated with Kalshi or Polymarket. "
         "Paper/simulated only.</div>",
         unsafe_allow_html=True,
     )
@@ -171,7 +171,8 @@ def _overview() -> None:
 
     st.markdown("#### What each tab shows")
     st.markdown(
-        "- **🏎️ Race replay** - the real race played back lap-by-lap (leaderboard, tyres, pits).\n"
+        "- **🔮 Next race** - a live forecast for the upcoming Grand Prix (current-season form).\n"
+        "- **🏎️ Race replay** - a real race played back lap-by-lap (leaderboard, tyres, pits).\n"
         "- **📊 Win probabilities** - the model's estimated chance of each result.\n"
         "- **🎯 Value finder** - where the model disagrees with the market price (an edge).\n"
         "- **💰 Bet sizing** - type a pretend budget → a disciplined, risk-capped allocation.\n"
@@ -179,9 +180,13 @@ def _overview() -> None:
         "- **✅ Accuracy (real data)** - how well the model actually did on real races.\n"
         "- **🧭 How it works** - the architecture diagram."
     )
-    st.info(
-        "Race data is **real** (2023 Bahrain GP). Market prices are **synthetic** and news items "
-        "are **hypothetical examples** - both clearly labelled - so the demo needs no accounts."
+    pred = evaluation_report.load_next_race_prediction()
+    if pred:
+        st.info(f"👉 **Next race** tab: the model's live forecast for the **{pred['race']}**.")
+    st.caption(
+        f"Race data is **real** ({REAL_RACE_NAME}). Market prices are **synthetic** and news "
+        "items are **hypothetical examples** - both clearly labelled - so the demo needs no "
+        "accounts."
     )
 
 
@@ -576,8 +581,54 @@ def _architecture() -> None:
     )
 
 
+def _next_race() -> None:
+    st.subheader("🔮 Next race - prediction")
+    pred = evaluation_report.load_next_race_prediction()
+    if pred is None:
+        st.info("No next-race prediction bundled. Run `scripts/predict_next.py` to generate one.")
+        return
+    _intro(
+        f"The model's forecast for the upcoming <b>{pred['race']}</b> ({pred.get('date', '')}), "
+        f"based on <b>current-season form</b> - trained on <b>{pred.get('trained_on_races', '?')} "
+        "real races</b> (2022-2026), before qualifying so no grid position yet. Chances are close "
+        "because form alone (without the grid) is genuinely uncertain."
+    )
+    drivers = pred.get("drivers", [])[:8]
+    xs, ys, cs = [], [], []
+    for d in drivers:
+        for label, key in (("Win", "win"), ("Podium", "podium")):
+            xs.append(d["driver"])
+            ys.append(d[key] * 100)
+            cs.append(label)
+    fig = px.bar(
+        x=xs,
+        y=ys,
+        color=cs,
+        barmode="group",
+        color_discrete_map={"Win": ACCENT, "Podium": "#7aa2ff"},
+        labels={"x": "", "y": "chance (%)", "color": ""},
+    )
+    st.plotly_chart(_style(fig), use_container_width=True)
+    st.dataframe(
+        [
+            {
+                "driver": d["driver"],
+                "team": (d.get("constructor") or "").replace("_", " ").title(),
+                "win": f"{d['win']:.0%}",
+                "podium": f"{d['podium']:.0%}",
+                "points": f"{d['points']:.0%}",
+            }
+            for d in drivers
+        ],
+        use_container_width=True,
+        hide_index=True,
+    )
+    st.caption("Form-based (Elo ratings + Plackett-Luce). A genuinely forward-looking prediction.")
+
+
 VIEWS = {
     "🏁 Overview": _overview,
+    "🔮 Next race": _next_race,
     "🏎️ Race replay": _race_replay,
     "📊 Win probabilities": _pricing,
     "🎯 Value finder": _opportunities,

@@ -22,6 +22,6 @@ any output.
    (e.g., Polymarket lists the US as blocked). This project stays read-only there and does
    **not** bypass any geographic or platform controls.
 7. **Independent project.** Not affiliated with Formula 1, the FIA, any constructor,
-   Kalshi, Polymarket, or Akuna Capital.
+   Kalshi or Polymarket.
 
 Use it to learn, not to bet.

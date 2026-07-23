@@ -27,6 +27,6 @@ CSS = f"""
 
 DISCLAIMER = (
     "ApexSignal F1 is an independent research project and is not affiliated with Formula 1, "
-    "the FIA, any constructor, Kalshi, Polymarket, or Akuna Capital. Research/paper-trading "
+    "the FIA, any constructor, Kalshi or Polymarket. Research/paper-trading "
     "only — not financial advice."
 )

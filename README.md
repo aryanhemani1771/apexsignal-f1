@@ -115,5 +115,5 @@ Seven phases, each with a concrete deliverable — see [`ROADMAP.md`](ROADMAP.md
 
 ## Disclaimer
 ApexSignal F1 is an independent research project and is not affiliated with Formula 1,
-the FIA, any constructor, Kalshi, Polymarket, or Akuna Capital. Nothing here is financial
+the FIA, any constructor, Kalshi or Polymarket. Nothing here is financial
 advice. All allocations are simulated for research purposes only.

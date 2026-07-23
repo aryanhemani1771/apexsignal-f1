@@ -24,4 +24,4 @@ _None yet._ When code is adapted from a reference repo, add:
 
 ## Required attribution string
 > ApexSignal F1 is an independent research project and is not affiliated with Formula 1,
-> the FIA, any constructor, Kalshi, Polymarket, or Akuna Capital.
+> the FIA, any constructor, Kalshi or Polymarket.
