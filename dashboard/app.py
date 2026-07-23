@@ -19,7 +19,7 @@ import streamlit as st
 import _bootstrap  # noqa: F401  # adds src/ to sys.path — must import before `apexsignal`
 import theme  # local module; `streamlit run dashboard/app.py` puts this dir on sys.path
 from apexsignal.allocation.constraints import RiskTolerance
-from apexsignal.domain.events import EventType
+from apexsignal.domain.events import DomainEvent, EventType
 from apexsignal.domain.news import NewsDocument, SourceClass
 from apexsignal.domain.race_state import RaceState, replay, replay_states
 from apexsignal.ingestion.fixtures_adapter import (
@@ -38,18 +38,82 @@ from apexsignal.simulation.engine import RaceSimulator, SimConfig, SimulationRes
 from apexsignal.simulation.payoff_matrix import ContractPrices, price_contracts
 
 ACCENT = theme.ACCENT
+ACCENT2 = theme.ACCENT2
 POS = "#3dd6c4"
 NEG = "#ff6b6b"
+FONT = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
 PRICE_AT_LAP = 30  # price the race from this point onward
 
 _CSS = """
 <style>
-  .as-intro { background: rgba(61,214,196,0.09); border-left: 3px solid #3dd6c4;
-    padding: 12px 16px; border-radius: 10px; margin: 4px 0 18px 0; font-size: 0.98rem; }
-  .as-intro b { color: #6ff0e0; }
-  .as-fn { color: #7c8896; font-size: 0.8rem; margin-top: 10px; }
-  [data-testid="stMetricValue"] { font-size: 1.6rem; }
-  h1, h2, h3 { letter-spacing: -0.01em; }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  html, body, [class*="css"], .stApp, button, input, textarea {
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+  /* Ambient background glow */
+  .stApp {
+    background:
+      radial-gradient(1100px 560px at 12% -8%, rgba(61,214,196,0.07), transparent 60%),
+      radial-gradient(950px 520px at 112% -4%, rgba(122,162,255,0.06), transparent 55%),
+      #0b0f14;
+  }
+  .block-container { padding-top: 2.8rem; max-width: 1180px; }
+  h1, h2, h3 { letter-spacing: -0.015em; }
+
+  /* Hero */
+  .as-hero { margin: 0 0 6px; }
+  .as-hero .kicker { color:#3dd6c4; letter-spacing:.2em; font-size:.72rem;
+    font-weight:700; text-transform:uppercase; }
+  .as-hero h1 { font-size:2.5rem; line-height:1.08; font-weight:800; margin:.12em 0 .18em;
+    background:linear-gradient(94deg,#eef4f9,#8fe9dc 52%,#7aa2ff);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .as-hero p { color:#a7b3bf; font-size:1.04rem; line-height:1.55; margin:0; max-width:74ch; }
+
+  /* Badge row */
+  .as-badges { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0 4px; }
+  .as-badge { font-size:.79rem; font-weight:500; padding:5px 12px; border-radius:999px;
+    background:rgba(255,255,255,0.035); border:1px solid #232e3b; color:#c7d0da; }
+  .as-badge.ok { border-color:rgba(61,214,196,.42); color:#8fe9dc;
+    background:rgba(61,214,196,.09); }
+  .as-badge.zero { border-color:rgba(245,196,81,.42); color:#f5d98a;
+    background:rgba(245,196,81,.08); }
+
+  /* Intro callout */
+  .as-intro { background:linear-gradient(180deg, rgba(61,214,196,0.09), rgba(61,214,196,0.028));
+    border-left:3px solid #3dd6c4; padding:13px 17px; border-radius:12px;
+    margin:6px 0 20px; font-size:.98rem; color:#cfd8e1; line-height:1.55; }
+  .as-intro b { color:#7fecdd; font-weight:600; }
+
+  /* Metric cards */
+  [data-testid="stMetric"] {
+    background:linear-gradient(180deg,#141b24,#10161d); border:1px solid #232e3b;
+    border-radius:14px; padding:14px 16px 12px; transition:border-color .15s, transform .15s; }
+  [data-testid="stMetric"]:hover { border-color:#2e3d4d; transform:translateY(-2px); }
+  [data-testid="stMetricLabel"] p { color:#8b98a5; font-weight:500; font-size:.82rem; }
+  [data-testid="stMetricValue"] { font-size:1.7rem; font-weight:700; letter-spacing:-.01em; }
+
+  /* Sidebar */
+  section[data-testid="stSidebar"] { background:#0c1219; border-right:1px solid #1a232e; }
+  section[data-testid="stSidebar"] div[role="radiogroup"] { gap:3px; }
+  section[data-testid="stSidebar"] div[role="radiogroup"] label {
+    padding:8px 12px; border-radius:9px; width:100%; cursor:pointer; font-weight:500;
+    color:#b7c2ce; transition:background .14s, color .14s, box-shadow .14s; }
+  section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+    background:rgba(61,214,196,0.07); color:#dceff0; }
+  section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
+    background:rgba(61,214,196,0.13); color:#7fecdd; box-shadow:inset 3px 0 0 #3dd6c4; }
+  section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child { display:none; }
+
+  /* Expanders + dataframes */
+  [data-testid="stExpander"] { border:1px solid #232e3b !important; border-radius:12px;
+    background:#10161d; }
+  [data-testid="stDataFrame"] { border:1px solid #1c2530; border-radius:12px; }
+
+  /* Footer */
+  .as-fn { color:#6b7783; font-size:.8rem; margin-top:12px; line-height:1.5; }
+  .as-foot { margin-top:26px; padding-top:14px; border-top:1px solid #1c2530;
+    color:#6b7783; font-size:.8rem; line-height:1.55; }
+  .as-foot b { color:#8fe9dc; font-weight:600; }
 </style>
 """
 
@@ -73,14 +137,23 @@ def _style(fig: go.Figure) -> go.Figure:
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font_color=theme.TEXT,
-        margin={"l": 8, "r": 8, "t": 30, "b": 8},
-        height=380,
+        font={"color": theme.TEXT, "family": FONT, "size": 13},
+        margin={"l": 8, "r": 8, "t": 34, "b": 8},
+        height=390,
         showlegend=True,
-        legend={"orientation": "h", "y": 1.12, "x": 0},
+        legend={"orientation": "h", "y": 1.14, "x": 0, "bgcolor": "rgba(0,0,0,0)"},
+        bargap=0.3,
+        bargroupgap=0.08,
+        hoverlabel={
+            "bgcolor": theme.PANEL,
+            "bordercolor": theme.BORDER,
+            "font": {"color": theme.TEXT, "family": FONT},
+        },
     )
-    fig.update_xaxes(gridcolor="rgba(255,255,255,0.06)", zeroline=False)
-    fig.update_yaxes(gridcolor="rgba(255,255,255,0.06)", zeroline=False)
+    fig.update_xaxes(
+        gridcolor="rgba(255,255,255,0.05)", zeroline=False, linecolor="rgba(255,255,255,0.08)"
+    )
+    fig.update_yaxes(gridcolor="rgba(255,255,255,0.05)", zeroline=False)
     return fig
 
 
@@ -88,7 +161,7 @@ def _style(fig: go.Figure) -> go.Figure:
 
 
 @st.cache_data(show_spinner=False)
-def _events() -> list:
+def _events() -> list[DomainEvent]:
     return real_race_events()
 
 
@@ -131,16 +204,6 @@ def _embed_mode() -> bool:
 
 
 def _overview() -> None:
-    st.title("🏁 ApexSignal F1")
-    st.caption("Predicting F1 races as probabilities, comparing them to markets, betting on paper.")
-    _intro(
-        "This tool watches a Formula 1 race, estimates the <b>chance</b> of each outcome "
-        "(who wins, who reaches the podium, who retires), compares those chances to "
-        "<b>betting-market prices</b>, and simulates <b>smart, risk-controlled bets</b> — with "
-        "<b>pretend money only</b>. It's a research/learning project, built with AI assistance."
-    )
-    st.caption(f"Live demo uses real timing data from the **{REAL_RACE_NAME}**.")
-
     report = evaluation_report.load_latest_report()
     races = report.get("n_races") if report else None
     brier = None
@@ -149,6 +212,29 @@ def _overview() -> None:
             brier = report["models"]["grid"]["contracts"]["win"]["calibrated"]["brier"]
         except (KeyError, TypeError):
             brier = None
+
+    st.markdown(
+        "<div class='as-hero'>"
+        "<div class='kicker'>🏁 F1 prediction-market research</div>"
+        "<h1>ApexSignal&nbsp;F1</h1>"
+        "<p>Turn a live Formula&nbsp;1 race into <b>probabilities</b>, compare them to "
+        "betting-market <b>prices</b>, and size disciplined bets — with pretend money only. "
+        "An end-to-end quant research pipeline: real timing data → simulation → calibrated "
+        "odds → value detection → risk-capped allocation.</p>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+    races_txt = f"{races} real races" if races else "real F1 races"
+    st.markdown(
+        "<div class='as-badges'>"
+        f"<span class='as-badge ok'>● Real data · {REAL_RACE_NAME}</span>"
+        f"<span class='as-badge'>Calibrated on {races_txt} (2022-2026)</span>"
+        "<span class='as-badge'>Monte Carlo · isotonic calibration</span>"
+        "<span class='as-badge zero'>Paper only · $0 at risk</span>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+    st.write("")
 
     c1, c2, c3, c4 = st.columns(4)
     c1.metric(
@@ -164,8 +250,8 @@ def _overview() -> None:
     )
     c3.metric(
         "Simulation speed",
-        "5,000 in ~0.2s",
-        help="Each prediction runs thousands of simulated race endings.",
+        "5k · 0.2s",
+        help="Each prediction runs ~5,000 simulated race endings in about 0.2 seconds.",
     )
     c4.metric("Money at risk", "$0", help="No real trading - ever. Paper/simulated only.")
 
@@ -373,13 +459,28 @@ def _allocation() -> None:
         st.plotly_chart(_style(fig), use_container_width=True)
     with right:
         st.markdown("**Budget split**")
+        deployed = alloc.risk.total_stake + alloc.risk.cash_retained
+        pct = (alloc.risk.total_stake / deployed * 100) if deployed else 0
         donut = go.Figure(
             go.Pie(
                 values=[alloc.risk.total_stake, alloc.risk.cash_retained],
                 labels=["At stake", "Kept as cash"],
-                hole=0.6,
-                marker_colors=[ACCENT, "#2a3441"],
+                hole=0.62,
+                sort=False,
+                marker={"colors": [ACCENT, "#28323f"], "line": {"color": theme.BG, "width": 2}},
+                textinfo="percent",
+                textfont={"color": theme.BG, "size": 13, "family": FONT},
             )
+        )
+        donut.update_layout(
+            annotations=[
+                {
+                    "text": f"<b>{pct:.0f}%</b><br><span style='font-size:11px;color:#8b98a5'>"
+                    "at stake</span>",
+                    "showarrow": False,
+                    "font": {"color": theme.TEXT, "size": 20, "family": FONT},
+                }
+            ]
         )
         st.plotly_chart(_style(donut), use_container_width=True)
 
@@ -646,13 +747,29 @@ def main() -> None:
     if embed:
         _overview()
     else:
-        st.sidebar.markdown("### 🏁 ApexSignal F1")
-        st.sidebar.caption("F1 prediction-market research · paper only")
+        st.sidebar.markdown(
+            "<div style='padding:2px 4px 10px'>"
+            "<div style='font-size:1.15rem;font-weight:800;letter-spacing:-.01em'>"
+            "🏁 ApexSignal F1</div>"
+            "<div style='color:#8b98a5;font-size:.8rem;margin-top:2px'>"
+            "Prediction-market research</div>"
+            "<span style='display:inline-block;margin-top:9px;font-size:.72rem;font-weight:600;"
+            "padding:3px 9px;border-radius:999px;background:rgba(245,196,81,.09);"
+            "border:1px solid rgba(245,196,81,.4);color:#f5d98a'>Paper only · $0 at risk</span>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
         choice = st.sidebar.radio("Explore", list(VIEWS), label_visibility="collapsed")
         st.sidebar.markdown("---")
         st.sidebar.caption("Research/learning demo. Not financial advice. No real money.")
         VIEWS[choice]()
-    st.markdown(f"<div class='as-fn'>{theme.DISCLAIMER}</div>", unsafe_allow_html=True)
+    st.markdown(
+        "<div class='as-foot'>"
+        "Built as a quant-research portfolio project, with AI assistance. "
+        f"<b>No real-money trading exists</b> — paper/simulated only.<br>{theme.DISCLAIMER}"
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
 
 if __name__ == "__main__":

@@ -10,9 +10,13 @@ TAGLINE = "Event-driven F1 prediction-market research — paper trading only"
 
 # Original palette (no team/championship branding).
 BG = "#0b0f14"
-PANEL = "#131a22"
-ACCENT = "#3dd6c4"
-TEXT = "#e6edf3"
+PANEL = "#141b24"
+PANEL2 = "#10161d"
+BORDER = "#232e3b"
+ACCENT = "#3dd6c4"  # teal — primary
+ACCENT2 = "#7aa2ff"  # periwinkle — secondary
+AMBER = "#f5c451"  # highlight
+TEXT = "#e8eef4"
 MUTED = "#8b98a5"
 
 CSS = f"""
