@@ -5,12 +5,22 @@
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 ![Execution: paper/demo only](https://img.shields.io/badge/execution-paper%20%2F%20demo%20only-orange)
 
-**▶️ Live dashboard:** https://apexsignal-f1-j7chywmbhc2bk8jqf2hktf.streamlit.app
+**▶️ Live dashboard:** https://apexsignal-f1-u7gnkgklbgwamd7gkfbwrt.streamlit.app
 
 **ApexSignal F1 is an event-driven Formula 1 prediction-market research platform that
 combines historical telemetry, live race state, structured technical and incident news,
 calibrated Monte Carlo simulation, public exchange prices, and correlation-aware paper
 allocation.**
+
+<p align="center">
+  <a href="https://apexsignal-f1-u7gnkgklbgwamd7gkfbwrt.streamlit.app">
+    <img src="docs/screenshots/apexsignal-overview.png" alt="ApexSignal F1 dashboard overview" width="90%">
+  </a>
+</p>
+
+| Simulated win / podium / points | Value finder (model vs. market) | Accuracy on 102 real races |
+|:---:|:---:|:---:|
+| ![Win probabilities](docs/screenshots/apexsignal-win-probabilities.png) | ![Value finder](docs/screenshots/apexsignal-value-finder.png) | ![Walk-forward accuracy](docs/screenshots/apexsignal-accuracy.png) |
 
 > Given all information available at this exact moment, what is the calibrated
 > probability of each F1 contract settling *Yes*, how does that compare with the market,
