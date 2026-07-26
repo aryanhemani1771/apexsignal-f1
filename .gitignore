@@ -42,3 +42,8 @@ secrets/
 .idea/
 .vscode/
 *.swp
+
+# Coverage reports
+coverage.xml
+.coverage
+htmlcov/
