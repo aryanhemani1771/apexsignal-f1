@@ -2,7 +2,7 @@
 
 Designed so someone with no finance background can follow it: every page opens with a plain
 explanation, uses charts instead of bare tables, and adds tooltips for any jargon. Runs on a
-bundled REAL race (2026 British GP, from FastF1 timing data) with real drivers and events, plus a
+bundled REAL race (2026 Belgian GP, from FastF1 timing data) with real drivers and events, plus a
 form-based forecast for the next race — all with zero credentials. Market prices are
 synthetic/illustrative (see the footnotes); news items are real, sourced F1 headlines.
 """
@@ -319,18 +319,22 @@ def _race_replay() -> None:
 
 def _pricing() -> None:
     st.subheader("Win probabilities")
+    pred = evaluation_report.load_next_race_prediction()
+    if pred is None:
+        st.info("No forecast bundled. Run `scripts/predict_next.py` to generate one.")
+        return
     _intro(
-        f"From lap {PRICE_AT_LAP} of the {REAL_RACE_NAME}, the model runs thousands of simulated "
-        "race endings and counts how often each driver achieves a result. So <b>32% podium</b> "
-        "means: in ~32% of simulated races, that driver finished top-3."
+        f"The model's <b>win, podium, and points</b> probabilities for the upcoming "
+        f"<b>{pred['race']}</b> ({pred.get('date', '')}), from thousands of simulated race "
+        "endings. So <b>32% podium</b> means: in ~32% of simulated races, that driver finished "
+        "top-3."
     )
-    prices = _prices()
-    top = sorted(prices.drivers.values(), key=lambda p: -p.win)[:6]
+    drivers = sorted(pred.get("drivers", []), key=lambda d: -d["win"])[:8]
     xs, ys, cs = [], [], []
-    for p in top:
-        for label, val in (("Win", p.win), ("Podium", p.podium), ("Points (top 10)", p.points)):
-            xs.append(p.driver_id)
-            ys.append(val * 100)
+    for d in drivers:
+        for label, key in (("Win", "win"), ("Podium", "podium"), ("Points (top 10)", "points")):
+            xs.append(d["driver"])
+            ys.append(d[key] * 100)
             cs.append(label)
     fig = px.bar(
         x=xs,
@@ -341,10 +345,10 @@ def _pricing() -> None:
         labels={"x": "", "y": "chance (%)", "color": ""},
     )
     st.plotly_chart(_style(fig), use_container_width=True)
-    st.metric(
-        "Chance of a safety car (remaining laps)",
-        f"{prices.safety_car:.0%}",
-        help="Probability a safety car appears before the race ends.",
+    st.caption(
+        f"Form-based pre-race forecast (grid-agnostic), trained on "
+        f"{pred.get('trained_on_races', '?')} real races. Simulation-based (Elo ratings + "
+        "Plackett-Luce)."
     )
 
 
@@ -815,7 +819,7 @@ def main() -> None:
         VIEWS[choice]()
     st.markdown(
         "<div class='as-foot'>"
-        "Built as a quant-research portfolio project, with AI assistance. "
+        "Built as a quant-research portfolio project. "
         f"<b>No real-money trading exists</b> — paper/simulated only.<br>{theme.DISCLAIMER}"
         "<div class='as-credit'>Created by "
         "<a href='https://aryanhemani1771.github.io/Profile/' target='_blank'>Aryan Hemani</a>"
