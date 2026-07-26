@@ -119,7 +119,7 @@ _CSS = """
 
 
 def _intro(text: str) -> None:
-    st.markdown(f"<div class='as-intro'>💡 {text}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='as-intro'>{text}</div>", unsafe_allow_html=True)
 
 
 def _market_footnote() -> None:
@@ -215,7 +215,7 @@ def _overview() -> None:
 
     st.markdown(
         "<div class='as-hero'>"
-        "<div class='kicker'>🏁 F1 prediction-market research</div>"
+        "<div class='kicker'>F1 prediction-market research</div>"
         "<h1>ApexSignal&nbsp;F1</h1>"
         "<p>Turn a live Formula&nbsp;1 race into <b>probabilities</b>, compare them to "
         "betting-market <b>prices</b>, and size disciplined bets — with pretend money only. "
@@ -257,18 +257,18 @@ def _overview() -> None:
 
     st.markdown("#### What each tab shows")
     st.markdown(
-        "- **🔮 Next race** - a live forecast for the upcoming Grand Prix (current-season form).\n"
-        "- **🏎️ Race replay** - a real race played back lap-by-lap (leaderboard, tyres, pits).\n"
-        "- **📊 Win probabilities** - the model's estimated chance of each result.\n"
-        "- **🎯 Value finder** - where the model disagrees with the market price (an edge).\n"
-        "- **💰 Bet sizing** - type a pretend budget → a disciplined, risk-capped allocation.\n"
-        "- **📰 News impact** - how an F1 news event would nudge the predictions.\n"
-        "- **✅ Accuracy (real data)** - how well the model actually did on real races.\n"
-        "- **🧭 How it works** - the architecture diagram."
+        "- **Next race** - a live forecast for the upcoming Grand Prix (current-season form).\n"
+        "- **Race replay** - a real race played back lap-by-lap (leaderboard, tyres, pits).\n"
+        "- **Win probabilities** - the model's estimated chance of each result.\n"
+        "- **Value finder** - where the model disagrees with the market price (an edge).\n"
+        "- **Bet sizing** - type a pretend budget → a disciplined, risk-capped allocation.\n"
+        "- **News impact** - how an F1 news event would nudge the predictions.\n"
+        "- **Accuracy (real data)** - how well the model actually did on real races.\n"
+        "- **How it works** - the architecture diagram."
     )
     pred = evaluation_report.load_next_race_prediction()
     if pred:
-        st.info(f"👉 **Next race** tab: the model's live forecast for the **{pred['race']}**.")
+        st.info(f"**Next race** tab: the model's live forecast for the **{pred['race']}**.")
     st.caption(
         f"Race data is **real** ({REAL_RACE_NAME}). Market prices are **synthetic** and news "
         "items are **hypothetical examples** - both clearly labelled - so the demo needs no "
@@ -280,7 +280,7 @@ def _overview() -> None:
 
 
 def _race_replay() -> None:
-    st.subheader("🏎️ Race replay")
+    st.subheader("Race replay")
     _intro(
         f"The <b>{REAL_RACE_NAME}</b>, rebuilt from real FastF1 timing data. Drag the slider to "
         "move through the laps - the <b>leaderboard</b> (positions, tyres, pit stops) updates "
@@ -313,7 +313,7 @@ def _race_replay() -> None:
 
 
 def _pricing() -> None:
-    st.subheader("📊 Win probabilities")
+    st.subheader("Win probabilities")
     _intro(
         f"From lap {PRICE_AT_LAP} of the {REAL_RACE_NAME}, the model runs thousands of simulated "
         "race endings and counts how often each driver achieves a result. So <b>32% podium</b> "
@@ -347,7 +347,7 @@ def _pricing() -> None:
 
 
 def _opportunities() -> None:
-    st.subheader("🎯 Value finder (model vs. market)")
+    st.subheader("Value finder (model vs. market)")
     _intro(
         "A betting market puts a <b>price</b> on each outcome (a price of 60¢ ≈ a 60% chance). "
         "If the model thinks something is <b>more likely</b> than the price implies - after fees - "
@@ -402,7 +402,7 @@ def _opportunities() -> None:
 
 
 def _allocation() -> None:
-    st.subheader("💰 Bet sizing (simulated)")
+    st.subheader("Bet sizing (simulated)")
     _intro(
         "Enter a pretend budget and how cautious you want to be. The tool sizes each bet with the "
         "<b>Kelly rule</b> (bet more when the edge is bigger), never over-bets one driver, and "
@@ -547,9 +547,9 @@ def _illustrative_news() -> list[NewsDocument]:
 
 
 def _news() -> None:
-    st.subheader("📰 News impact")
+    st.subheader("News impact")
     st.warning(
-        "⚠️ **Illustrative hypothetical examples** (not real news about these drivers) - "
+        "**Illustrative hypothetical examples** (not real news about these drivers) - "
         "they show how the pipeline turns a headline into a change in the model."
     )
     _intro(
@@ -569,7 +569,7 @@ def _news() -> None:
             {
                 "event": t.event_type.value.replace("_", " ").title(),
                 "who": ", ".join(t.drivers or t.constructors) or "the field",
-                "confirmed?": "✅ confirmed" if t.is_confirmed else "🟡 unconfirmed",
+                "confirmed?": "confirmed" if t.is_confirmed else "unconfirmed",
             }
             for t in result.timeline
         ],
@@ -594,7 +594,7 @@ def _news() -> None:
 
 
 def _performance() -> None:
-    st.subheader("✅ Accuracy - on real races")
+    st.subheader("Accuracy - on real races")
     _intro(
         "This is the <b>honest</b> tab: how well did the model do on <b>real</b> F1 races? "
         "We use the <b>Brier score</b> - think of it as prediction error, where <b>lower is "
@@ -668,7 +668,7 @@ digraph apexsignal {
 
 
 def _architecture() -> None:
-    st.subheader("🧭 How it works")
+    st.subheader("How it works")
     _intro(
         "The pipeline: real F1 data → rebuild the race → model the outcomes → simulate → turn "
         "into probabilities → compare to markets → size bets. Each box is a tested module."
@@ -683,7 +683,7 @@ def _architecture() -> None:
 
 
 def _next_race() -> None:
-    st.subheader("🔮 Next race - prediction")
+    st.subheader("Next race - prediction")
     pred = evaluation_report.load_next_race_prediction()
     if pred is None:
         st.info("No next-race prediction bundled. Run `scripts/predict_next.py` to generate one.")
@@ -728,20 +728,20 @@ def _next_race() -> None:
 
 
 VIEWS = {
-    "🏁 Overview": _overview,
-    "🔮 Next race": _next_race,
-    "🏎️ Race replay": _race_replay,
-    "📊 Win probabilities": _pricing,
-    "🎯 Value finder": _opportunities,
-    "💰 Bet sizing": _allocation,
-    "📰 News impact": _news,
-    "✅ Accuracy (real data)": _performance,
-    "🧭 How it works": _architecture,
+    "Overview": _overview,
+    "Next race": _next_race,
+    "Race replay": _race_replay,
+    "Win probabilities": _pricing,
+    "Value finder": _opportunities,
+    "Bet sizing": _allocation,
+    "News impact": _news,
+    "Accuracy (real data)": _performance,
+    "How it works": _architecture,
 }
 
 
 def main() -> None:
-    st.set_page_config(page_title="ApexSignal F1", page_icon="🏁", layout="wide")
+    st.set_page_config(page_title="ApexSignal F1", page_icon="", layout="wide")
     st.markdown(_CSS, unsafe_allow_html=True)
     embed = _embed_mode()
     if embed:
@@ -750,7 +750,7 @@ def main() -> None:
         st.sidebar.markdown(
             "<div style='padding:2px 4px 10px'>"
             "<div style='font-size:1.15rem;font-weight:800;letter-spacing:-.01em'>"
-            "🏁 ApexSignal F1</div>"
+            "ApexSignal F1</div>"
             "<div style='color:#8b98a5;font-size:.8rem;margin-top:2px'>"
             "Prediction-market research</div>"
             "<span style='display:inline-block;margin-top:9px;font-size:.72rem;font-weight:600;"

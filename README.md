@@ -5,7 +5,7 @@
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 ![Execution: paper/demo only](https://img.shields.io/badge/execution-paper%20%2F%20demo%20only-orange)
 
-**▶️ Live dashboard:** https://apexsignal-f1-u7gnkgklbgwamd7gkfbwrt.streamlit.app
+**▶Live dashboard:** https://apexsignal-f1-u7gnkgklbgwamd7gkfbwrt.streamlit.app
 
 **ApexSignal F1 is an event-driven Formula 1 prediction-market research platform that
 combines historical telemetry, live race state, structured technical and incident news,
@@ -31,7 +31,7 @@ It is a research and **paper-trading** platform — not a live-money trading bot
 one-shot winner predictor. Allocations are always labeled *Model-ranked simulated
 allocation*; the engine is allowed to answer *"No qualifying opportunity."*
 
-> ℹ️ *A personal research/learning project, built with AI assistance, to explore end-to-end
+> *A personal research/learning project, built with AI assistance, to explore end-to-end
 > quantitative-research workflows — point-in-time data engineering, calibrated probabilistic
 > modeling, market microstructure, and risk. Research and paper-trading only; no real money.*
 
@@ -46,14 +46,14 @@ measured by the code.
 
 | Capability | State |
 |---|---|
-| Repository, tooling, CI, docs | ✅ Implemented (Phase 0) |
-| Historical data + deterministic replay | ✅ verified on real 2023 Bahrain GP (Phase 1) |
-| Baseline + calibrated probabilities | ✅ real 2022-season evaluation (Phase 2) |
-| Monte Carlo simulation & contract pricing | ✅ mid-race pricing verified (Phase 3) |
-| Structured news intelligence | ✅ moves a prior + telemetry confirms (Phase 4) |
-| Kalshi / Polymarket / synthetic integration | ✅ read-only + safety guards (Phase 5) |
-| Allocation & risk | ✅ fractional Kelly + VaR/ES (Phase 6) |
-| FastAPI + dashboard + deploy | ✅ 9 views, health checks (Phase 7) |
+| Repository, tooling, CI, docs | Implemented (Phase 0) |
+| Historical data + deterministic replay | verified on real 2023 Bahrain GP (Phase 1) |
+| Baseline + calibrated probabilities | real 2022-season evaluation (Phase 2) |
+| Monte Carlo simulation & contract pricing | mid-race pricing verified (Phase 3) |
+| Structured news intelligence | moves a prior + telemetry confirms (Phase 4) |
+| Kalshi / Polymarket / synthetic integration | read-only + safety guards (Phase 5) |
+| Allocation & risk | fractional Kelly + VaR/ES (Phase 6) |
+| FastAPI + dashboard + deploy | 9 views, health checks (Phase 7) |
 
 ### Actual measured results
 *(reproduce with the commands noted; nothing here is hard-coded)*

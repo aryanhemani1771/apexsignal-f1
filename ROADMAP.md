@@ -27,18 +27,18 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 ### Verification status (be honest — do not claim unverified work)
 | Capability | Verified how | Status |
 |---|---|---|
-| `uv sync --dev` installs | local | ✅ verified (Python 3.12.13, uv.lock committed) |
-| `ruff` / `mypy(strict)` / `pytest` / `bandit` green | local `make ci` | ✅ verified — 42 tests pass + 1 gated skip, 0 lint/type/security issues |
-| `scripts/bootstrap.py` runs | local | ✅ verified |
-| Deterministic replay of the synthetic fixture | unit tests | ✅ verified |
-| **Real FastF1 download + replay** (2023 Bahrain GP) | `RUN_FASTF1_TESTS=1` integration test + manual `download_history.py`/`replay_race.py` | ✅ verified — 1347 events, 0 quality errors, replayed podium **VER/PER/ALO** matches reality |
-| **Real model evaluation** (2022 season) | `scripts/train_models.py` walk-forward | ✅ verified — 22 races; best winner Brier `elo_grid` 0.0312 (calibrated); report committed |
-| **Real mid-race pricing** (2023 Bahrain, lap 30) | `scripts/price_race.py` + gated integration test | ✅ verified — VER 0.66 win / PER 0.20 / LEC 0.09; DNF ≈ input; VER led & won |
-| Monte Carlo speed | local timing | ✅ 5000 paths × 37 laps in ~0.23s (well under the "few seconds" bar) |
-| **News moves a prior + telemetry confirms** | `scripts/refresh_news.py` + unit tests | ✅ verified — confirmed upgrade: BO4 win 0.26→0.33; telemetry obs confirms/reverses the pace prior |
-| **Model-vs-market opportunity scan** | `scripts/refresh_markets.py` + unit tests | ✅ verified — 41 synthetic markets → 9 ranked opportunities after fees/slippage/mapping gate; "no opportunity" path works |
-| Safety guards (no live trading, Polymarket read-only, mapping gate) | unit tests | ✅ verified — `LiveTradingDisabledError` on live Kalshi; title-only markets forced to manual review |
-| **Bankroll → simulated allocation** | `services/portfolio_service.py` + unit tests | ✅ verified — $10k → 8 positions, exactly 10% deployed, all caps respected, integer contracts, VaR95 $237 / ES95 $280 from payoff paths; "no qualifying opportunity" path works |
+| `uv sync --dev` installs | local | verified (Python 3.12.13, uv.lock committed) |
+| `ruff` / `mypy(strict)` / `pytest` / `bandit` green | local `make ci` | verified — 42 tests pass + 1 gated skip, 0 lint/type/security issues |
+| `scripts/bootstrap.py` runs | local | verified |
+| Deterministic replay of the synthetic fixture | unit tests | verified |
+| **Real FastF1 download + replay** (2023 Bahrain GP) | `RUN_FASTF1_TESTS=1` integration test + manual `download_history.py`/`replay_race.py` | verified — 1347 events, 0 quality errors, replayed podium **VER/PER/ALO** matches reality |
+| **Real model evaluation** (2022 season) | `scripts/train_models.py` walk-forward | verified — 22 races; best winner Brier `elo_grid` 0.0312 (calibrated); report committed |
+| **Real mid-race pricing** (2023 Bahrain, lap 30) | `scripts/price_race.py` + gated integration test | verified — VER 0.66 win / PER 0.20 / LEC 0.09; DNF ≈ input; VER led & won |
+| Monte Carlo speed | local timing | 5000 paths × 37 laps in ~0.23s (well under the "few seconds" bar) |
+| **News moves a prior + telemetry confirms** | `scripts/refresh_news.py` + unit tests | verified — confirmed upgrade: BO4 win 0.26→0.33; telemetry obs confirms/reverses the pace prior |
+| **Model-vs-market opportunity scan** | `scripts/refresh_markets.py` + unit tests | verified — 41 synthetic markets → 9 ranked opportunities after fees/slippage/mapping gate; "no opportunity" path works |
+| Safety guards (no live trading, Polymarket read-only, mapping gate) | unit tests | verified — `LiveTradingDisabledError` on live Kalshi; title-only markets forced to manual review |
+| **Bankroll → simulated allocation** | `services/portfolio_service.py` + unit tests | verified — $10k → 8 positions, exactly 10% deployed, all caps respected, integer contracts, VaR95 $237 / ES95 $280 from payoff paths; "no qualifying opportunity" path works |
 | Docker image builds | CI `deploy.yml` / `ci.yml` docker-build job | **NOT verified locally** — no Docker on the authoring machine |
 | Dashboard (replay + pricing + model perf) renders | needs `--extra dashboard` (Streamlit) | **compiles + lints; not run-verified** (Streamlit not in CI env) |
 
@@ -59,7 +59,7 @@ Legend: `[x]` done & verified · `[~]` partial / stubbed with a real interface �
 - [x] Structured logging (`logging.py`) with secret redaction
 - [x] Foundational domain models with real tests: `provenance.py`, `events.py`
 - [x] Minimal deterministic fixture bundle under `data/fixtures/`
-- [x] `make ci` green locally (lint + type + test + security)  ← **Phase 0 exit gate ✅**
+- [x] `make ci` green locally (lint + type + test + security)  ← **Phase 0 exit gate **
 - [~] Inspect referenced repos' licenses and record in `REFERENCES.md` / `THIRD_PARTY_NOTICES.md` (initial pass done; deepen when code is actually borrowed in later phases)
 
 ## Phase 1 — Historical F1 data & replay
