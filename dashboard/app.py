@@ -4,7 +4,7 @@ Designed so someone with no finance background can follow it: every page opens w
 explanation, uses charts instead of bare tables, and adds tooltips for any jargon. Runs on a
 bundled REAL race (2026 British GP, from FastF1 timing data) with real drivers and events, plus a
 form-based forecast for the next race — all with zero credentials. Market prices are
-synthetic/illustrative (see the footnotes); news items are clearly-labelled hypothetical examples.
+synthetic/illustrative (see the footnotes); news items are real, sourced F1 headlines.
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ from apexsignal.ingestion.fixtures_adapter import (
     real_race_events,
 )
 from apexsignal.ingestion.synthetic_market import SyntheticMarketAdapter, SyntheticMarketConfig
-from apexsignal.intelligence.entity_resolution import EntityResolver
+from apexsignal.intelligence.entity_resolution import DEFAULT_ROSTER, EntityResolver, Roster
 from apexsignal.intelligence.event_extractor import RuleBasedExtractor
 from apexsignal.services import evaluation_report, news_service, race_service
 from apexsignal.services.opportunity_service import scan_opportunities
@@ -114,6 +114,11 @@ _CSS = """
   .as-foot { margin-top:26px; padding-top:14px; border-top:1px solid #1c2530;
     color:#6b7783; font-size:.8rem; line-height:1.55; }
   .as-foot b { color:#8fe9dc; font-weight:600; }
+  .as-credit { margin-top:14px; text-align:center; font-size:.95rem; font-weight:700;
+    letter-spacing:.02em; color:#8fe9dc; }
+  .as-credit a { color:#8fe9dc; text-decoration:none;
+    border-bottom:1px solid rgba(143,233,220,.35); }
+  .as-credit a:hover { border-bottom-color:#8fe9dc; }
 </style>
 """
 
@@ -270,9 +275,9 @@ def _overview() -> None:
     if pred:
         st.info(f"**Next race** tab: the model's live forecast for the **{pred['race']}**.")
     st.caption(
-        f"Race data is **real** ({REAL_RACE_NAME}). Market prices are **synthetic** and news "
-        "items are **hypothetical examples** - both clearly labelled - so the demo needs no "
-        "accounts."
+        f"Race data is **real** ({REAL_RACE_NAME}) and the news items are **real, sourced** "
+        "F1 headlines. Only the betting-market prices are **synthetic** (clearly labelled), so "
+        "the demo needs no accounts."
     )
 
 
@@ -503,65 +508,92 @@ def _allocation() -> None:
 # ------------------------------------------------------------------ News impact
 
 
-def _illustrative_news() -> list[NewsDocument]:
-    t = datetime(2023, 3, 3, 9, 0, tzinfo=UTC)
-    seen = datetime(2023, 3, 3, 9, 30, tzinfo=UTC)
+# Roster extended with current (2026) drivers the model uses but the default roster omits.
+_ROSTER = Roster(
+    driver_aliases={
+        **DEFAULT_ROSTER.driver_aliases,
+        "antonelli": "ANT",
+        "kimi antonelli": "ANT",
+        "ant": "ANT",
+    },
+    constructor_aliases=DEFAULT_ROSTER.constructor_aliases,
+)
 
-    def doc(title: str, text: str, src: SourceClass) -> NewsDocument:
+# Real source articles (2026 Hungarian GP weekend) — split to keep lines short.
+_SRC_PENALTIES = (
+    "https://www.skysports.com/f1/news/12433/13566874/"
+    "lewis-hamilton-kimi-antonelli-given-hungarian-gp-grid-penalties-"
+    "which-shuffle-race-grid-headed-by-lando-norris"
+)
+_SRC_RUSSELL = (
+    "https://www.skysports.com/f1/news/12040/13566876/"
+    "hungarian-gp-george-russell-forced-to-change-mercedes-power-unit-"
+    "after-water-leak-in-qualifying"
+)
+
+
+def _recent_news() -> list[NewsDocument]:
+    """A few REAL, sourced F1 news items from the 2026 Hungarian GP weekend.
+
+    Each maps to an event the rule-based extractor recognises, so the demo runs on genuine
+    headlines rather than invented ones. Sources are linked under the table.
+    """
+    pub = datetime(2026, 7, 25, 15, 0, tzinfo=UTC)  # qualifying day
+    seen = datetime(2026, 7, 25, 15, 30, tzinfo=UTC)
+
+    def doc(title: str, text: str, src: SourceClass, url: str) -> NewsDocument:
         return NewsDocument(
             title=title,
             text=text,
-            source_url="https://example.org/x",
+            source_url=url,
             source_class=src,
-            published_at=t,
+            published_at=pub,
             first_seen_at=seen,
-            meeting_id="demo",
+            meeting_id="hungary_2026",
         )
 
     return [
         doc(
-            "Example: Leclerc takes a grid penalty for a new power unit",
-            "Hypothetical illustration - the stewards ruled Leclerc will start with a grid "
-            "penalty after a new power unit. It is official.",
+            "Hamilton handed a three-place grid penalty",
+            "Lewis Hamilton has been handed a three-place grid penalty for impeding in Q3 "
+            "qualifying at the Hungarian Grand Prix. The stewards' ruling is official.",
             SourceClass.FIA_DOCUMENT,
+            _SRC_PENALTIES,
         ),
         doc(
-            "Example: Mercedes brings a floor upgrade for Hamilton",
-            "Hypothetical illustration - Mercedes has confirmed an aerodynamic floor upgrade "
-            "for Hamilton. It is official.",
+            "Antonelli given a three-place grid penalty under yellow flags",
+            "Kimi Antonelli has been given a three-place grid penalty for a yellow-flag "
+            "infringement in qualifying. It is an official steward decision.",
+            SourceClass.FIA_DOCUMENT,
+            _SRC_PENALTIES,
+        ),
+        doc(
+            "Russell hit by a reliability concern, fits a new power unit",
+            "George Russell faces a reliability concern at the Hungarian Grand Prix after a "
+            "crack caused a water leak in qualifying, and Mercedes has fitted a new power unit "
+            "for the race.",
             SourceClass.OFFICIAL_TEAM,
-        ),
-        doc(
-            "Example: reliability concern flagged for Sainz",
-            "Hypothetical illustration - a specialist report notes a reliability concern on the "
-            "Sainz power unit after Friday running.",
-            SourceClass.SPECIALIST_PUB,
-        ),
-        doc(
-            "Example: rain is expected on Sunday",
-            "Hypothetical illustration - forecasters say rain is expected, raising the chance of "
-            "a wet race.",
-            SourceClass.GENERAL_PUB,
+            _SRC_RUSSELL,
         ),
     ]
 
 
 def _news() -> None:
     st.subheader("News impact")
-    st.warning(
-        "**Illustrative hypothetical examples** (not real news about these drivers) - "
-        "they show how the pipeline turns a headline into a change in the model."
-    )
     _intro(
-        "The system reads F1 news, pulls out <b>structured facts</b> (a grid penalty, a car "
-        "upgrade, a reliability worry) and shows how each <b>nudges the model</b>. Opinion/hype "
-        "is kept on a separate 'sentiment' track."
+        "The system reads real F1 news, pulls out <b>structured facts</b> (a grid penalty, a "
+        "power-unit change, a reliability worry) and shows how each <b>nudges the model</b>. "
+        "Opinion and hype are kept on a separate 'sentiment' track."
     )
-    docs = _illustrative_news()
+    st.caption(
+        "Real, sourced news from the 2026 Hungarian GP weekend, run through the deterministic "
+        "rule-based extractor. Sources are linked below the chart."
+    )
+    docs = _recent_news()
     result = news_service.run_pipeline(
         docs,
-        extractor=RuleBasedExtractor(resolver=EntityResolver()),
-        as_of=datetime(2023, 3, 4, tzinfo=UTC),
+        extractor=RuleBasedExtractor(resolver=EntityResolver(_ROSTER)),
+        as_of=datetime(2026, 7, 26, tzinfo=UTC),
     )
     st.markdown("**What the system understood from the news**")
     st.dataframe(
@@ -576,10 +608,15 @@ def _news() -> None:
         use_container_width=True,
         hide_index=True,
     )
-    if result.impacts:
+    paced = [
+        (d, imp.pace_delta_seconds_per_lap)
+        for d, imp in result.impacts.items()
+        if abs(imp.pace_delta_seconds_per_lap) > 1e-6
+    ]
+    if paced:
         st.markdown("**How it would change each driver's predicted pace** (negative = faster)")
-        ids = list(result.impacts)
-        deltas = [result.impacts[d].pace_delta_seconds_per_lap for d in ids]
+        ids = [d for d, _ in paced]
+        deltas = [v for _, v in paced]
         fig = px.bar(
             x=ids,
             y=deltas,
@@ -588,6 +625,19 @@ def _news() -> None:
             color_discrete_map={"faster": POS, "slower": NEG},
         )
         st.plotly_chart(_style(fig), use_container_width=True)
+    else:
+        st.caption(
+            "These events mainly affect **starting position** (grid penalties), not lap pace — "
+            "so there's no pace change to plot. The model shifts their grid slot instead."
+        )
+    st.markdown(
+        "<div class='as-fn'>Sources: "
+        f"<a href='{_SRC_PENALTIES}' target='_blank'>Sky Sports — Hamilton &amp; Antonelli "
+        "grid penalties</a> · "
+        f"<a href='{_SRC_RUSSELL}' target='_blank'>Sky Sports — Russell power-unit change</a>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
 
 # ------------------------------------------------------------------ Accuracy (real data)
@@ -767,6 +817,9 @@ def main() -> None:
         "<div class='as-foot'>"
         "Built as a quant-research portfolio project, with AI assistance. "
         f"<b>No real-money trading exists</b> — paper/simulated only.<br>{theme.DISCLAIMER}"
+        "<div class='as-credit'>Created by "
+        "<a href='https://aryanhemani1771.github.io/Profile/' target='_blank'>Aryan Hemani</a>"
+        "</div>"
         "</div>",
         unsafe_allow_html=True,
     )
