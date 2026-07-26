@@ -19,18 +19,17 @@ from pathlib import Path
 warnings.filterwarnings("ignore")
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from apexsignal.domain.contracts import DriverEntry, RaceResult
-from apexsignal.ingestion.fastf1_adapter import FastF1Adapter
-from apexsignal.models.prerace import EloGridModel, PreRaceConfig
+from apexsignal.domain.contracts import DriverEntry, RaceResult  # noqa: E402
+from apexsignal.ingestion.fastf1_adapter import FastF1Adapter  # noqa: E402
+from apexsignal.models.prerace import EloGridModel, PreRaceConfig  # noqa: E402
 
-CACHE = "/private/tmp/claude-501/-Users-aryanhemani-Documents-Claude-code-resume/6fc3e279-7475-4de1-9075-2a22d38c9ea6/scratchpad/fastf1_cache"
 SEASONS = [2022, 2023, 2024, 2025, 2026]
 HUNGARY_ROUND = 11  # 2026 round 11; rounds 1-10 are completed
 OUT = Path("artifacts/reports/hungary_2026_prediction.json")
 
 
 def main() -> int:
-    adapter = FastF1Adapter(cache_dir=CACHE)
+    adapter = FastF1Adapter()  # default gitignored cache (.cache/fastf1)
 
     results: list[RaceResult] = []
     for season in SEASONS:
