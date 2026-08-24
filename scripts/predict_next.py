@@ -20,8 +20,8 @@ from apexsignal.models.prerace import EloModel, PreRaceConfig
 from apexsignal.settings import load_settings
 
 SEASONS = [2022, 2023, 2024, 2025, 2026]
-NEXT_RACE = "2026 Hungarian Grand Prix"
-NEXT_DATE = "2026-07-26"
+NEXT_RACE = "2026 Italian Grand Prix"
+NEXT_DATE = "2026-09-06"
 OUT = Path("artifacts/reports/next_race_prediction.json")
 
 

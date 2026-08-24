@@ -2,7 +2,7 @@
 
 Designed so someone with no finance background can follow it: every page opens with a plain
 explanation, uses charts instead of bare tables, and adds tooltips for any jargon. Runs on a
-bundled REAL race (2026 Belgian GP, from FastF1 timing data) with real drivers and events, plus a
+bundled REAL race (2026 Dutch GP, from FastF1 timing data) with real drivers and events, plus a
 form-based forecast for the next race — all with zero credentials. Market prices are
 synthetic/illustrative (see the footnotes); news items are real, sourced F1 headlines.
 """
@@ -523,27 +523,25 @@ _ROSTER = Roster(
     constructor_aliases=DEFAULT_ROSTER.constructor_aliases,
 )
 
-# Real source articles (2026 Hungarian GP weekend) — split to keep lines short.
-_SRC_PENALTIES = (
-    "https://www.skysports.com/f1/news/12433/13566874/"
-    "lewis-hamilton-kimi-antonelli-given-hungarian-gp-grid-penalties-"
-    "which-shuffle-race-grid-headed-by-lando-norris"
+# Real source articles (2026 Dutch GP weekend) — split to keep lines short.
+_SRC_PU = (
+    "https://grandepremio.com/en/f1/"
+    "lewis-hamilton-charles-leclerc-and-more-power-unit-component-changes-at-the-dutch-gp/"
 )
-_SRC_RUSSELL = (
-    "https://www.skysports.com/f1/news/12040/13566876/"
-    "hungarian-gp-george-russell-forced-to-change-mercedes-power-unit-"
-    "after-water-leak-in-qualifying"
+_SRC_PENALTIES = (
+    "https://www.gpfans.com/en/f1-news/1089395/"
+    "f1-results-today-dutch-grand-prix-2026-times-finishing-positions-penalties/"
 )
 
 
 def _recent_news() -> list[NewsDocument]:
-    """A few REAL, sourced F1 news items from the 2026 Hungarian GP weekend.
+    """A few REAL, sourced F1 news items from the 2026 Dutch GP weekend.
 
     Each maps to an event the rule-based extractor recognises, so the demo runs on genuine
     headlines rather than invented ones. Sources are linked under the table.
     """
-    pub = datetime(2026, 7, 25, 15, 0, tzinfo=UTC)  # qualifying day
-    seen = datetime(2026, 7, 25, 15, 30, tzinfo=UTC)
+    pub = datetime(2026, 8, 22, 15, 0, tzinfo=UTC)  # component changes / qualifying day
+    seen = datetime(2026, 8, 22, 15, 30, tzinfo=UTC)
 
     def doc(title: str, text: str, src: SourceClass, url: str) -> NewsDocument:
         return NewsDocument(
@@ -553,31 +551,31 @@ def _recent_news() -> list[NewsDocument]:
             source_class=src,
             published_at=pub,
             first_seen_at=seen,
-            meeting_id="hungary_2026",
+            meeting_id="netherlands_2026",
         )
 
     return [
         doc(
-            "Hamilton handed a three-place grid penalty",
-            "Lewis Hamilton has been handed a three-place grid penalty for impeding in Q3 "
-            "qualifying at the Hungarian Grand Prix. The stewards' ruling is official.",
-            SourceClass.FIA_DOCUMENT,
-            _SRC_PENALTIES,
-        ),
-        doc(
-            "Antonelli given a three-place grid penalty under yellow flags",
-            "Kimi Antonelli has been given a three-place grid penalty for a yellow-flag "
-            "infringement in qualifying. It is an official steward decision.",
-            SourceClass.FIA_DOCUMENT,
-            _SRC_PENALTIES,
-        ),
-        doc(
-            "Russell hit by a reliability concern, fits a new power unit",
-            "George Russell faces a reliability concern at the Hungarian Grand Prix after a "
-            "crack caused a water leak in qualifying, and Mercedes has fitted a new power unit "
-            "for the race.",
+            "Ferrari make a power unit change for Hamilton",
+            "Ferrari made a power unit change for Lewis Hamilton at the Dutch Grand Prix, "
+            "fitting a new exhaust — his third of the season, and stayed within the seasonal "
+            "allocation.",
             SourceClass.OFFICIAL_TEAM,
-            _SRC_RUSSELL,
+            _SRC_PU,
+        ),
+        doc(
+            "Mercedes make a power unit change for Russell",
+            "Mercedes made a power unit change for George Russell at the Dutch Grand Prix, "
+            "installing a fourth new exhaust of the season.",
+            SourceClass.OFFICIAL_TEAM,
+            _SRC_PU,
+        ),
+        doc(
+            "Sainz handed a 10-second time penalty for a collision",
+            "Carlos Sainz was given a 10-second time penalty for causing a collision at the "
+            "Dutch Grand Prix. It is an official steward decision.",
+            SourceClass.FIA_DOCUMENT,
+            _SRC_PENALTIES,
         ),
     ]
 
@@ -586,18 +584,18 @@ def _news() -> None:
     st.subheader("News impact")
     _intro(
         "The system reads real F1 news, pulls out <b>structured facts</b> (a grid penalty, a "
-        "power-unit change, a reliability worry) and shows how each <b>nudges the model</b>. "
+        "power-unit change, a time penalty) and shows how each <b>nudges the model</b>. "
         "Opinion and hype are kept on a separate 'sentiment' track."
     )
     st.caption(
-        "Real, sourced news from the 2026 Hungarian GP weekend, run through the deterministic "
+        "Real, sourced news from the 2026 Dutch GP weekend, run through the deterministic "
         "rule-based extractor. Sources are linked below the chart."
     )
     docs = _recent_news()
     result = news_service.run_pipeline(
         docs,
         extractor=RuleBasedExtractor(resolver=EntityResolver(_ROSTER)),
-        as_of=datetime(2026, 7, 26, tzinfo=UTC),
+        as_of=datetime(2026, 8, 23, tzinfo=UTC),
     )
     st.markdown("**What the system understood from the news**")
     st.dataframe(
@@ -631,14 +629,14 @@ def _news() -> None:
         st.plotly_chart(_style(fig), use_container_width=True)
     else:
         st.caption(
-            "These events mainly affect **starting position** (grid penalties), not lap pace — "
-            "so there's no pace change to plot. The model shifts their grid slot instead."
+            "These events affect the race through **penalties and component swaps**, not raw "
+            "lap pace — so there's no pace change to plot."
         )
     st.markdown(
         "<div class='as-fn'>Sources: "
-        f"<a href='{_SRC_PENALTIES}' target='_blank'>Sky Sports — Hamilton &amp; Antonelli "
-        "grid penalties</a> · "
-        f"<a href='{_SRC_RUSSELL}' target='_blank'>Sky Sports — Russell power-unit change</a>"
+        f"<a href='{_SRC_PU}' target='_blank'>Grande Prêmio — Dutch GP power-unit changes</a>"
+        " · "
+        f"<a href='{_SRC_PENALTIES}' target='_blank'>GPFans — Dutch GP results &amp; penalties</a>"
         "</div>",
         unsafe_allow_html=True,
     )
