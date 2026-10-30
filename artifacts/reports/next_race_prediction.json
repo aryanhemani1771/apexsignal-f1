@@ -1,163 +1,163 @@
 {
-  "race": "2026 Italian Grand Prix",
-  "date": "2026-09-06",
-  "generated_at": "2026-08-24T03:24:07.150724+00:00",
-  "trained_on_races": 104,
+  "race": "2026 Mexico City Grand Prix",
+  "date": "2026-11-01",
+  "generated_at": "2026-10-30T16:51:52.866116+00:00",
+  "trained_on_races": 110,
   "method": "form-based (Elo ratings + Plackett-Luce); pre-qualifying, no grid",
   "drivers": [
     {
+      "driver": "VER",
+      "constructor": "red_bull",
+      "win": 0.1605,
+      "podium": 0.4376,
+      "points": 0.9266
+    },
+    {
       "driver": "NOR",
       "constructor": "mclaren",
-      "win": 0.1363,
-      "podium": 0.3832,
-      "points": 0.8345
-    },
-    {
-      "driver": "VER",
-      "constructor": "red_bull_racing",
-      "win": 0.1231,
-      "podium": 0.3608,
-      "points": 0.8117
-    },
-    {
-      "driver": "RUS",
-      "constructor": "mercedes",
-      "win": 0.1212,
-      "podium": 0.3621,
-      "points": 0.8522
-    },
-    {
-      "driver": "PIA",
-      "constructor": "mclaren",
-      "win": 0.105,
-      "podium": 0.3154,
-      "points": 0.8061
-    },
-    {
-      "driver": "LEC",
-      "constructor": "ferrari",
-      "win": 0.1042,
-      "podium": 0.2945,
-      "points": 0.8046
+      "win": 0.1155,
+      "podium": 0.3264,
+      "points": 0.8124
     },
     {
       "driver": "ANT",
       "constructor": "mercedes",
-      "win": 0.0981,
-      "podium": 0.2828,
-      "points": 0.8265
+      "win": 0.1134,
+      "podium": 0.3365,
+      "points": 0.8385
+    },
+    {
+      "driver": "LEC",
+      "constructor": "ferrari",
+      "win": 0.1064,
+      "podium": 0.3063,
+      "points": 0.8014
+    },
+    {
+      "driver": "RUS",
+      "constructor": "mercedes",
+      "win": 0.0968,
+      "podium": 0.2812,
+      "points": 0.8053
     },
     {
       "driver": "HAM",
       "constructor": "ferrari",
-      "win": 0.0976,
-      "podium": 0.2921,
-      "points": 0.8054
+      "win": 0.088,
+      "podium": 0.2684,
+      "points": 0.7799
+    },
+    {
+      "driver": "PIA",
+      "constructor": "mclaren",
+      "win": 0.0798,
+      "podium": 0.2445,
+      "points": 0.7582
+    },
+    {
+      "driver": "HAD",
+      "constructor": "red_bull",
+      "win": 0.0519,
+      "podium": 0.1643,
+      "points": 0.6994
     },
     {
       "driver": "LAW",
-      "constructor": "red_bull_racing",
-      "win": 0.0323,
-      "podium": 0.1034,
-      "points": 0.5593
+      "constructor": "rb_f1_team",
+      "win": 0.0269,
+      "podium": 0.0959,
+      "points": 0.4785
     },
     {
       "driver": "LIN",
-      "constructor": "racing_bulls",
-      "win": 0.0182,
-      "podium": 0.0649,
-      "points": 0.3365
+      "constructor": "rb_f1_team",
+      "win": 0.0241,
+      "podium": 0.0843,
+      "points": 0.4228
+    },
+    {
+      "driver": "GAS",
+      "constructor": "alpine_f1_team",
+      "win": 0.0175,
+      "podium": 0.0565,
+      "points": 0.3204
     },
     {
       "driver": "BEA",
       "constructor": "haas_f1_team",
-      "win": 0.0166,
-      "podium": 0.0578,
-      "points": 0.3334
+      "win": 0.0152,
+      "podium": 0.0471,
+      "points": 0.2611
     },
     {
-      "driver": "GAS",
-      "constructor": "alpine",
-      "win": 0.0164,
-      "podium": 0.0516,
-      "points": 0.2994
-    },
-    {
-      "driver": "TSU",
-      "constructor": "racing_bulls",
-      "win": 0.0154,
-      "podium": 0.0429,
-      "points": 0.2829
-    },
-    {
-      "driver": "STR",
-      "constructor": "aston_martin",
-      "win": 0.0139,
-      "podium": 0.0432,
-      "points": 0.2711
-    },
-    {
-      "driver": "SAI",
-      "constructor": "williams",
-      "win": 0.0134,
-      "podium": 0.0434,
-      "points": 0.2709
-    },
-    {
-      "driver": "HUL",
-      "constructor": "audi",
-      "win": 0.0132,
-      "podium": 0.047,
-      "points": 0.2589
+      "driver": "COL",
+      "constructor": "alpine_f1_team",
+      "win": 0.0145,
+      "podium": 0.0444,
+      "points": 0.2634
     },
     {
       "driver": "ALO",
       "constructor": "aston_martin",
-      "win": 0.0129,
-      "podium": 0.0554,
-      "points": 0.3335
+      "win": 0.0135,
+      "podium": 0.0434,
+      "points": 0.2559
     },
     {
-      "driver": "ALB",
-      "constructor": "williams",
-      "win": 0.0118,
-      "podium": 0.0394,
-      "points": 0.2557
-    },
-    {
-      "driver": "BOR",
+      "driver": "HUL",
       "constructor": "audi",
-      "win": 0.0115,
-      "podium": 0.0376,
-      "points": 0.2395
+      "win": 0.0125,
+      "podium": 0.0439,
+      "points": 0.2556
     },
     {
-      "driver": "PER",
-      "constructor": "cadillac",
-      "win": 0.0115,
-      "podium": 0.0321,
-      "points": 0.1871
+      "driver": "STR",
+      "constructor": "aston_martin",
+      "win": 0.0116,
+      "podium": 0.0393,
+      "points": 0.2264
+    },
+    {
+      "driver": "SAI",
+      "constructor": "williams",
+      "win": 0.0106,
+      "podium": 0.0345,
+      "points": 0.1988
     },
     {
       "driver": "OCO",
       "constructor": "haas_f1_team",
-      "win": 0.011,
-      "podium": 0.036,
-      "points": 0.2416
+      "win": 0.0105,
+      "podium": 0.0356,
+      "points": 0.2127
     },
     {
-      "driver": "COL",
-      "constructor": "alpine",
-      "win": 0.0099,
-      "podium": 0.0324,
-      "points": 0.2228
+      "driver": "BOR",
+      "constructor": "audi",
+      "win": 0.0095,
+      "podium": 0.0338,
+      "points": 0.2047
+    },
+    {
+      "driver": "ALB",
+      "constructor": "williams",
+      "win": 0.0079,
+      "podium": 0.0281,
+      "points": 0.1777
+    },
+    {
+      "driver": "PER",
+      "constructor": "cadillac_f1_team",
+      "win": 0.0079,
+      "podium": 0.0259,
+      "points": 0.1601
     },
     {
       "driver": "BOT",
-      "constructor": "cadillac",
-      "win": 0.0065,
-      "podium": 0.0221,
-      "points": 0.1512
+      "constructor": "cadillac_f1_team",
+      "win": 0.0056,
+      "podium": 0.0224,
+      "points": 0.1376
     }
   ]
 }
