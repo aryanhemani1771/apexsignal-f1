@@ -5,6 +5,16 @@ Also serves as the agent development log (one entry per phase / work session).
 
 ## [Unreleased]
 
+### Data refresh — through the 2026 US GP — 2026-10-30
+- Pulled 2026 rounds 13–18 (Italian → US GP) via FastF1; evaluation now covers **110 real races**
+  (2022–2026, `--rounds 24`), 33 held-out test races / 696 held-out driver predictions.
+- Calibrated winner Brier: `grid` 0.0267, `elo_grid` 0.0304, `elo` 0.0403, `uniform` 0.0792.
+  Grid still does most of the work; `elo_grid` does not beat `grid` on the winner contract here.
+- Next-race forecast rolled to the **2026 Mexico City GP** (round 19, Nov 1), pre-qualifying,
+  form-only (no grid). Recent-3 spot check: 2/3 winners, 8/9 podium slots.
+- Note: the gated networked test (`RUN_FASTF1_TESTS=1`) currently fails on a fresh, uncached
+  download because F1's live-timing archive returns HTTP 401; cached-data paths are unaffected.
+
 ### Phase 7 — Portfolio deployment — 2026-07-19
 **Objective:** a recruiter opens the dashboard/API and understands the system in two minutes.
 

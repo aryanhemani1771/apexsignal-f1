@@ -18,7 +18,7 @@ allocation.**
   </a>
 </p>
 
-| Simulated win / podium / points | Value finder (model vs. market) | Accuracy on 102 real races |
+| Simulated win / podium / points | Value finder (model vs. market) | Accuracy on 110 real races |
 |:---:|:---:|:---:|
 | ![Win probabilities](docs/screenshots/apexsignal-win-probabilities.png) | ![Value finder](docs/screenshots/apexsignal-value-finder.png) | ![Walk-forward accuracy](docs/screenshots/apexsignal-accuracy.png) |
 
@@ -60,12 +60,15 @@ measured by the code.
 
 - **Replay** — 2023 Bahrain GP: 1347 events, 0 data-quality errors, replayed podium **VER / PER /
   ALO** (matches reality). `download_history.py` + `replay_race.py`.
-- **Baseline evaluation** — walk-forward on **2022–2026 (102 real races, ~31 held-out test
-  races)**: calibrated winner-contract Brier **0.028** (`grid`) / **0.029** (`elo_grid`), roughly
-  half the naive baseline (0.078) and well-calibrated (ECE ≈ 0.02). Honest finding: **starting
-  grid does most of the work**; Elo form adds modest value; DNF prediction is weak. `train_models.py`.
-- **Recent-race spot check** — trained on 2022–2026, predicting the 3 most recent races:
-  **1/3 winners, 5/9 podium slots** (small sample, illustrative). `predict_recent.py`.
+- **Baseline evaluation** — walk-forward on **2022–2026 (110 real races through the 2026 US GP,
+  33 held-out test races, 696 held-out driver predictions)**: calibrated winner-contract Brier
+  **0.027** (`grid`) / **0.030** (`elo_grid`) / 0.040 (`elo`), vs. the naive baseline (0.079
+  calibrated, 0.046 raw 1/N); well-calibrated (ECE ≈ 0.02). Honest finding: **starting grid does
+  most of the work** — on this window `elo_grid` does not beat `grid` on the winner contract; Elo
+  form helps only on DNF. DNF prediction is weak. `train_models.py --rounds 24`.
+- **Recent-race spot check** — trained on 2022–2026, predicting the 3 most recent races
+  (2026 Bahrain, Singapore, US GPs): **2/3 winners, 8/9 podium slots** (small sample,
+  illustrative). `predict_recent.py`.
 - **In-race pricing** — 2023 Bahrain at lap 30: **VER 0.66 / PER 0.20 / LEC 0.09** win; per-driver
   DNF ≈ the input rate. Monte Carlo runs **5000 paths × 37 laps in ~0.23s**. `price_race.py`.
 - **News → model** — a confirmed aero upgrade moves a driver's win probability **0.26 → 0.33**;
